@@ -1,9 +1,9 @@
 import struct
 
 PATH_TO_INT_MAP = {
-    '150.uint64': 150,
-    #'1.uint64': 1,
-    #'maxint.uint64': 18446744073709551615
+    "150.uint64": 150,
+    #"1.uint64": 1,
+    #"maxint.uint64": 18446744073709551615,
 }
 
 
@@ -16,10 +16,11 @@ def main() -> None:
         encoded_res = encode(res)
         print(encoded_res)
 
+        decoded_res = decode(encoded_res)
+        print(decoded_res)
 
 
-
-def encode(n: int) -> None:
+def encode(num: int) -> None:
     """
     while n > 0:
         take lowest order 7 bits
@@ -29,15 +30,34 @@ def encode(n: int) -> None:
     return byte_sequence
     """
     out = []
-    import pdb;pdb.set_trace()
-    while n > 0:
+    while num > 0:  # TODO - maybe aviod double checking
         # Retrieving the first 7 bits from the integer
-        part = n % 128 # TODO - Bitmask for performance
+        part = num % 128  # TODO - Bitmask for performance
         # Bit shifting (i.e. removing) 7 bits from the integer
-        n >>= 7
-        # Adding the 7 bits to the array
+        num >>= 7
+        if num > 0:
+            part |= 0x80
         out.append(part)
     return bytes(out)
+
+HEX_TO_INT_MAP = {
+    **{str(i): i for i in range(10)},
+    'a': 10,
+    'b': 11,
+    'c': 12,
+    'd': 13,
+    'e': 14,
+    'f': 15
+}
+
+def decode(repr: bytes) -> int:
+    hex = repr.hex()
+    while hex:
+        hex_part = int(hex[:2])
+    return hex_part
+
+def _convert_hex_to_int(hex: str, pos: int) -> int:
+    return HEX_TO_INT_MAP[hex] * 16**pos
 
 
 def get_integer_from_binary_file(path: str) -> int:
@@ -47,13 +67,13 @@ def get_integer_from_binary_file(path: str) -> int:
 
 
 def _interpret_hex_string_as_int(hex: bytes) -> int:
-    return struct.unpack('>Q', hex)[0]
+    return struct.unpack(">Q", hex)[0]
 
 
 def read_integer_from_file(file: str) -> bytes:
-    with open(file, 'rb') as f:
+    with open(file, "rb") as f:
         return f.read()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
