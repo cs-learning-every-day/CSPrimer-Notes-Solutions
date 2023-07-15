@@ -173,7 +173,7 @@
 - `hexdump` bash command
     - `hexdump -C /bin/ls | head` (-C is for canonical, the common representation of hex)
         - `xxd` another hexdump command has a different format
-    - Output is represented in four columns
+    - Output is represehttps://csprimer.com/watch/powers-of-two/nted in four columns
         - Left-Hand Column
             - Represents which byte the next byte is
             - First row ->  000000000 (0th Byte)
@@ -189,3 +189,26 @@
             - Can be helpful to get some sort of overview 
     - Asterisk in the index column
         - Indicates a continuous repetition of the previous row of bytes until the row that follows the asterisk
+
+
+## How to remember all the powers of 2
+- [Link](https://csprimer.com/watch/powers-of-two/)
+- First Ten -> Memorize
+    - 2**0 -> 1
+    - 2**1 -> 2
+    - 2**2 -> 4
+    - 2**3 -> 8
+    - 2**4 -> 16
+    - 2**5 -> 32
+    - 2**6 -> 64
+    - 2**7 -> 128
+    - 2**8 -> 256
+    - 2**9 -> 512
+    - 2**10 -> 1024
+- You can approximate 2**10 as 1000
+- 2**16
+    - 2**10 * 2**6 = 1000 * 64 = 64,000
+- 2**32
+    - (2**10)**3 * 2**2 = 1,000,000,000 * 4 = 4,000,000,000
+
+
