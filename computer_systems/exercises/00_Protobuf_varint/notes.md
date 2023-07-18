@@ -194,6 +194,7 @@
 ## How to remember all the powers of 2
 - [Link](https://csprimer.com/watch/powers-of-two/)
 - First Ten -> Memorize
+    ```
     - 2**0 -> 1
     - 2**1 -> 2
     - 2**2 -> 4
@@ -210,5 +211,53 @@
     - 2**10 * 2**6 = 1000 * 64 = 64,000
 - 2**32
     - (2**10)**3 * 2**2 = 1,000,000,000 * 4 = 4,000,000,000
+```
 
+## What is the effect of shifting bits?
+- [Link](https://csprimer.com/watch/bit-shifting/)
+- Sometimes
+    - As an arithmetic operation
+    - Actual moving of bits
+- Example (left shifting)
+    - `1 << 3`
+        - 01 (1) -> 1000 (8)
+        - You are multiplying by 2**3
+    - `6 << 1`
+        - 0110 (6) -> 1100 (12)
+        - You are multiplying by 2**1
+- Example (right shifting)
+    - Rounding floor division by two
+    - `7 >> 1`
+        - 0111 (7) -> 0011 (3)
+        - You are dividing by 2 and taking the floor
+            - Until 0
 
+## What do bitwise and, or, xor and not do?
+- [Link](https://csprimer.com/watch/bitwise-ops/)
+- Sometimes you want to think of them as arithmetic
+- Often: Think of bits as representing something that isn't arithmetic 
+- AND (&)
+    - 1011 & 0110 -> 0010
+    - Uses: Mask of arbitrary bits
+        - 1011011
+        - If you want the last three bits you can and on the last three bits (no matter what the last three bits will be retained
+- OR (|)
+    - 1101 | 0110 -> 1111
+    - Uses: 
+        - To set a specific bit in every situation
+            - 0011010 | 1000000 = 1011010
+        - User permissions as a set of bits
+            - User - 001011
+            - Admin - 1000001
+            - Bitwise or of both gets you the permission bits that correspond to the permissions
+- XOR
+    - 1011 | 0110 -> 1101
+    - Uses:
+        - Encryption
+            - Plaintext:   10110110
+            - Key:         11001101
+            - XOR (Cipher) 01111011
+            - XOR on key:  10110110
+- NOT (~)
+    - 1100 -> 0011
+    
