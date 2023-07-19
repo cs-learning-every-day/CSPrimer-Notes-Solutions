@@ -9,10 +9,10 @@ def encode(num: int) -> bytes:
     """
     out = []
     while num > 0:
-        part = num & 0x7f
+        part = num & 0x7f # i.e. 0111 1111
         num >>= 7
         if num > 0:
-            part |= 0x80
+            part |= 0x80 # i.e. 1000 0000
         out.append(part)
     return bytes(out)
 
