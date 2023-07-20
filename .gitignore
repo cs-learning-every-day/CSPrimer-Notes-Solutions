@@ -150,4 +150,7 @@ Mkfile.old
 dkms.conf
 
 
+# Videos
+*.mp4
+*.DS_Store
 
