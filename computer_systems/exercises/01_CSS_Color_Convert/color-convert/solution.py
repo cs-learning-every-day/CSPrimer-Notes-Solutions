@@ -44,15 +44,14 @@ def hex_to_rgb(hex: str) -> str:
     return f'rgb({rgb_vals[0]} {rgb_vals[1]} {rgb_vals[2]})'
     
 
-
 def rgb_convert(hex: str) -> int:
     if len(hex) == 2:
         return int(hex, 16)
     return int(hex, 16) * 17
 
+
 def alpha_convert(hex: str) -> int:
     return rgb_convert(hex) / 255
-
 
 
 def process_text(line: str) -> None:
@@ -80,7 +79,7 @@ def convert():
 
 
 if __name__ == '__main__':
-    if len(sys.argv[1:]) == 0:
+    if len(sys.argv) > 1 and sys.argv[1] == '-c':
         convert()
     else:
         main()
