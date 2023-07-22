@@ -17,11 +17,11 @@ import sys
 def truncate(string: bytes, num: int) -> bytes:
     if num >= len(string):
         return string
-    import pdb;pdb.set_trace()
-    # If byte at trunation piont starts with 10 specifically then we move pointer down
+    # If byte at truncation point starts with 10 specifically then we move pointer down
     # Finding if byte starts with 10
         # Mask out the first two bits - by bitwise and on 0b11000000 (or 0xC0)
         # Check if they are equivalent to 0b10000000 (or 0x80)
+    # This works b/c only continuation bytes will have 0xc0
     while num > 0 & (string[num] & 0xc0 == 0x80):
         num -= 1
     return string[:num]
