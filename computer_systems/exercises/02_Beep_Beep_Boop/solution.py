@@ -1,18 +1,18 @@
-"""Planning
-- Beep
-- echo stdin
-- beep n times
-"""
 import sys
+import tty
 import time
+import termios
+
+tty.setcbreak(0)
+
 while True:
-    test = sys.stdin.readline()
-    print(test)
+    char = sys.stdin.read(1)
     try:
-        n_beeps = int(test.strip())
+        n_times = int(char)
     except ValueError:
-        n_beeps = 0
-    for _ in range(n_beeps):
-        print("\07")
-        #sys.stdout.buffer.write(b'\07')
-        time.sleep(1)
+        n_times = 0
+    for _ in range(n_times):
+        sys.stdout.buffer.write(b'\x07')
+    sys.stdout.buffer.flush()
+
+
