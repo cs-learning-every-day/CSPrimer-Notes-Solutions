@@ -1,4 +1,3 @@
-import pdb
 from dataclasses import dataclass
 FILE = 'teapot.bmp'
 
@@ -23,7 +22,7 @@ class Pixel:
 
     def to_bytes(self) -> bytes:
         return (
-            self.B.to_bytes() + self.R.to_bytes() + self.G.to_bytes()
+            self.B.to_bytes() + self.G.to_bytes() + self.R.to_bytes() 
         )
 
 
@@ -67,20 +66,12 @@ class PixelMatrix:
         for row in self.data:
             for p in row:
                 byte_str += p.to_bytes()
-        return byte_str
+        return bytes(byte_str)
 
 
 def translate_matrix_position(i: int, j: int) -> tuple[int, int]:
-    return j, 419 - i
+    return 419 - j, i
 
-
-"""
-Some hand Transformations
-(0, 0) -> (0, 419)
-(0, 1) -> (1, 419)
-(1, 1) -> (1, 418)
-(419, 419) -> (419, 0)
-"""
 
 @dataclass
 class PixelArray:
@@ -154,17 +145,14 @@ def rotate_bmp(bmp: BMP) -> BMP:
         pixels=PixelArray.build(x.to_bytes())
     )
 
+
 def main():
     bmp = get_bmp(FILE)
 
     rotated_bmp = rotate_bmp(bmp)
 
     write_bmp_to_file(rotated_bmp)
-    
+
 
 if __name__ == '__main__':
     main()
-
-
-
-
