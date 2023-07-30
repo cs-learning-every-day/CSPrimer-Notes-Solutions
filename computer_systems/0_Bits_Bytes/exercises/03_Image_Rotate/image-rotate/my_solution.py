@@ -30,6 +30,10 @@ class Pixel:
 class PixelMatrix:
     data: list[list[Pixel]]
 
+    @property
+    def width(self):
+        return len(self.data)
+
     @classmethod
     def from_pixel_array(cls, pixel_array: list[Pixel]) -> "PixelMatrix":
         pixel_matrix = []
@@ -54,9 +58,9 @@ class PixelMatrix:
 
     def rotate_90_degrees(self) -> "PixelMatrix":
         empty_matrix = self.create_empty_matrix()
-        for i in range(420):
-            for j in range(420):
-                x, y = translate_matrix_position(i, j)
+        for i in range(self.width):
+            for j in range(self.width):
+                x, y = self.translate_matrix_position(i, j)
                 empty_matrix[x][y] = self.data[i][j]
         self.data = empty_matrix
         return self
@@ -69,8 +73,8 @@ class PixelMatrix:
         return bytes(byte_str)
 
 
-def translate_matrix_position(i: int, j: int) -> tuple[int, int]:
-    return 419 - j, i
+    def translate_matrix_position(self, i: int, j: int) -> tuple[int, int]:
+        return self.width - j - 1, i
 
 
 @dataclass
