@@ -1,0 +1,6 @@
+Parse the pcap savefile header, to confirm that we are opening and parsing the file correctly, but mostly just to get to the end of the header. For this you can use man pcap-savefile if that exists on your system, or google for the same
+Parse each of the per-packet pcap headers, to determine the limits of each (they are variable length, so expect to see alternating packets and payload).
+Parse the very brief "link layer header", in this case a small placeholder to indicate that packets were captured over the loopback interface
+Parse the IP headers, using something like the IPv4 Wikipedia article to determine the header layout. Details are not necessary, although you could use IP addresses to know which messages are "inbound"
+Next will come the TCP headers. From here you will want to parse flag bits to determine which contain SYN and/or ACK flags. You may also wish to use the ports to determine inbound vs outbound messages, if you didn't already derive this from the IP headers. Again the Wikipedia article (this time on TCP obviously) should be sufficient for the header structure.
+

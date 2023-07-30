@@ -14,11 +14,8 @@ offset, width, height = le(data[10:14]), le(data[18:22]), le(data[22:26])
 print(offset, width, height)
 
 pixels = []
-# TODO - iterate in the expected order for rotated pixels
-# Look up corresponding *source* pixel and append to `pixels`
 for ty in range(width):
     for tx in range(width):
-        import pdb;pdb.set_trace()
         sy = tx
         sx = width - ty - 1
         n = offset + 3 * (sy * width + sx)
