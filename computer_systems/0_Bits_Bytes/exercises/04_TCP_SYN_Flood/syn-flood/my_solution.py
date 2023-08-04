@@ -21,7 +21,6 @@ All fields in byte order of the host writing the file (little endian)
 """
 
 import enum
-from functools import lru_cache
 from tqdm import tqdm
 from dataclasses import dataclass
 FILE = 'synflood.pcap'
@@ -133,7 +132,7 @@ class IPHeader:
     def build(cls, data: bytes) -> "IPHeader":
         version = data[0] >> 4
         IHL = (data[0] & 0b1111 ) # gets # of rows of IP Header
-        IHL <<= 2 # Converts IHL to number of bytes (4 bytes per row)
+        #IHL <= 2 # Converts IHL to number of bytes (4 bytes per row)
         DSCP = data[1] >> 2
         ECN = data[1] & 0b11
         total_length = be2int(data[2:4])
@@ -166,11 +165,64 @@ class IPHeader:
 @dataclass
 class TCPHeader:
     raw: bytes
+    source_port: int # 2 bytes
+    destination_port: int # 2 bytes
+    sequence_number: int # 4 bytes
+    ack_number: int # 4 bytes
+    data_offset: int # 4 bits
+    CWR: int # 1 bit
+    ECE: int # 1 bit
+    URG: int # 1 bit
+    ACK: int # 1 bit
+    PSH: int # 1 bit
+    RST: int # 1 bit
+    SYN: int # 1 bit
+    FIN: int # 1 bit
+    window_size: int # 1 byte
+    checksum: int # 2 bytes
+    urgent_pointer: int # 2 bytes
+    options: bytes
+
 
     @classmethod
     def build(cls, data: bytes) -> "TCPHeader":
+        source_port = be2int(data[0:2])
+        destination_port = be2int(data[2:4])
+        sequence_number = be2int(data[4:8])
+        ack_number = be2int(data[8:12])
+        data_offset = data[12] >> 4
+        CWR = data[13] >> 7
+        ECE = (data[13] & 0b1111111) >> 6
+        URG = (data[13] & 0b111111) >> 5
+        ACK = (data[13] & 0b11111) >> 4
+        PSH = (data[13] & 0b1111) >> 3
+        RST = (data[13] & 0b111) >> 2
+        SYN = (data[13] & 0b11) >> 1
+        FIN = data[13] & 0b1
+        window_size = be2int(data[14:16])
+        checksum = be2int(data[16:18])
+        urgent_pointer = be2int(data[18:20])
+        options = data[20:]
+
         return cls(
-            raw=data
+            raw=data,
+            source_port=source_port,
+            destination_port=destination_port,
+            sequence_number=sequence_number,
+            ack_number=ack_number,
+            data_offset=data_offset,
+            CWR=CWR,
+            ECE=ECE,
+            URG=URG,
+            ACK=ACK,
+            PSH=PSH,
+            RST=RST,
+            SYN=SYN,
+            FIN=FIN,
+            window_size=window_size,
+            checksum=checksum,
+            urgent_pointer=urgent_pointer,
+            options=options
         )
 
 
@@ -179,7 +231,7 @@ class PacketPayload:
     raw: bytes
     link_layer_header: int
     ip_header: IPHeader
-    tcp_header: TCPHeader | None
+    tcp_header: TCPHeader
 
     def __post_init__(self):
         assert self.link_layer_header == 2
@@ -188,10 +240,7 @@ class PacketPayload:
     def build(cls, data: bytes) -> "PacketPayload":
         link_layer_header = le2int(data[:4])
         ip_header = IPHeader.build(data[4:])
-        tcp_header = TCPHeader.build(data[20:ip_header.IHL]) if ip_header.IHL > 20 else None
-
-        
-        import pdb;pdb.set_trace()
+        tcp_header = TCPHeader.build(data[20:])
         return cls(
             raw=data,
             link_layer_header=link_layer_header,
@@ -210,18 +259,55 @@ class Packet:
     def raw(self) -> bytes:
         return self.header.raw + self.payload.raw
 
+    @property
+    def syn(self) -> int:
+        return self.payload.tcp_header.SYN
+
+    @property
+    def ack(self) -> int:
+        return self.payload.tcp_header.ACK
+
+    @property
+    def syn_ack(self) -> int:
+        return int(self.syn and self.ack)
+
+    @property
+    def is_client_packet(self) -> int:
+        return not self.is_server_packet
+
+    @property
+    def is_server_packet(self) -> int:
+        return self.syn_ack
+
+    @property
+    def source_port(self) -> int:
+        return self.payload.tcp_header.source_port
+
+    @property
+    def destination_port(self) -> int:
+        return self.payload.tcp_header.destination_port
+
+
     @classmethod
     def create_packets(
         cls,
         data: bytes,
-        header_length: int
+        header_length: int,
+        n_packets: int | None = None,
     ) -> list["Packet"]:
         packets = []
-        while tqdm(data):
+        counter = 0
+        if n_packets is None:
+            n_packets = len(data)
+        while (
+            tqdm(data) and
+            counter < n_packets
+        ):
             packet = cls.build(data, header_length)
             end_of_packet = header_length+packet.header.n_bytes_captured
             packets.append(packet)
             data = data[end_of_packet:]
+            counter += 1
         return packets
 
     @classmethod
@@ -238,7 +324,38 @@ class Packet:
         return Packet(header=packet_header, payload=payload)
 
 
+def analyze_packets(packets: list[Packet]) -> None:
+    print('CLIENT PACKETS')
+    client_packets = [
+        p for p in packets if p.is_client_packet
+    ]
+    print(len(client_packets))
+    clients = set(p.source_port for p in client_packets)
+    client_destinations = set(p.destination_port for p in client_packets)
+    clients_syn = [p for p in client_packets if p.syn]
+    print(len(clients_syn))
+    clients_ack = [p for p in client_packets if p.ack]
+    print(len(clients_ack))
+    clients_none = [p for p in client_packets if not p.ack and not p.syn]
+    assert len(clients) == 1
+    assert len(client_destinations) == 1
+    print(len(clients_syn))
+    print(len(clients_ack))
+    print(len(clients_none))
+    print(len(client_packets))
+    assert len(clients_syn) + len(clients_ack) + len(clients_none) == len(client_packets)
 
+    print('SERVER PACKETS')
+
+    server_packets = [p for p in packets if p.is_server_packet]
+    servers = set(p.destination_port for p in server_packets)
+    server_sources = set(p.source_port for p in server_packets)
+    print(len(server_packets))
+    assert len(servers) == 1
+    assert len(server_sources) == 1
+
+    assert len(client_packets) + len(server_packets) == len(packets)
+ 
 
 def main():
     with open(FILE, 'rb') as f:
@@ -247,10 +364,12 @@ def main():
     header = PCAPHeader.build(data)
     packets = Packet.create_packets(
         data=data[len(header.raw):],
-        header_length=PACKET_HEADER_LENGTH
+        header_length=PACKET_HEADER_LENGTH,
+        n_packets=100
     )
-    print(len(packets))
-    import pdb;pdb.set_trace()
+    analyze_packets(packets)
+   
+
 
 
 if __name__ == '__main__':
