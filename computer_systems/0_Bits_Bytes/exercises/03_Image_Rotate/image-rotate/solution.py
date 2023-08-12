@@ -15,10 +15,14 @@ print(offset, width, height)
 
 pixels = []
 for ty in range(width):
-    for tx in range(width):
-        sy = tx
-        sx = width - ty - 1
-        n = offset + 3 * (sy * width + sx)
+    for tx in range(height):
+        new_coordinates = (sy, sx) = tx, width - ty - 1
+        # This translates the 2D coordinate on the x,y plane
+        # to an index in a 1-D array
+        # This can also be computed as follows: new_idx = sy + sx * height
+        #new_idx = sy * width + sx
+        new_idx = sy + sx * height
+        n = offset + 3 * new_idx
         pixels.append(
             data[n:n+3]
         )

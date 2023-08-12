@@ -21,6 +21,7 @@ All fields in byte order of the host writing the file (little endian)
 """
 
 import enum
+from typing import Optional
 from tqdm import tqdm
 from dataclasses import dataclass
 FILE = 'synflood.pcap'
@@ -198,6 +199,7 @@ class TCPHeader:
         PSH = (data[13] & 0b1111) >> 3
         RST = (data[13] & 0b111) >> 2
         SYN = (data[13] & 0b11) >> 1
+        SYN = (data[13] & 0x0002)
         FIN = data[13] & 0b1
         window_size = be2int(data[14:16])
         checksum = be2int(data[16:18])
@@ -272,12 +274,20 @@ class Packet:
         return int(self.syn and self.ack)
 
     @property
-    def is_client_packet(self) -> int:
-        return not self.is_server_packet
+    def initiated(self) -> bool:
+        return self.is_server_packet and self.syn
 
     @property
-    def is_server_packet(self) -> int:
-        return self.syn_ack
+    def acked(self) -> bool:
+        return self.is_client_packet and self.ack
+
+    @property
+    def is_client_packet(self) -> bool:
+        return self.source_port == 80
+
+    @property
+    def is_server_packet(self) -> bool:
+        return self.destination_port == 80
 
     @property
     def source_port(self) -> int:
@@ -294,7 +304,7 @@ class Packet:
         data: bytes,
         header_length: int,
         n_packets: int | None = None,
-    ) -> list["Packet"]:
+    ) -> list[Optional["Packet"]]:
         packets = []
         counter = 0
         if n_packets is None:
@@ -307,6 +317,7 @@ class Packet:
             end_of_packet = header_length+packet.header.n_bytes_captured
             packets.append(packet)
             data = data[end_of_packet:]
+            import pdb;pdb.set_trace()
             counter += 1
         return packets
 
@@ -325,35 +336,51 @@ class Packet:
 
 
 def analyze_packets(packets: list[Packet]) -> None:
-    print('CLIENT PACKETS')
+    print(len(packets))
+    #print('CLIENT PACKETS')
     client_packets = [
         p for p in packets if p.is_client_packet
     ]
     print(len(client_packets))
-    clients = set(p.source_port for p in client_packets)
-    client_destinations = set(p.destination_port for p in client_packets)
-    clients_syn = [p for p in client_packets if p.syn]
-    print(len(clients_syn))
-    clients_ack = [p for p in client_packets if p.ack]
-    print(len(clients_ack))
-    clients_none = [p for p in client_packets if not p.ack and not p.syn]
-    assert len(clients) == 1
-    assert len(client_destinations) == 1
-    print(len(clients_syn))
-    print(len(clients_ack))
-    print(len(clients_none))
-    print(len(client_packets))
-    assert len(clients_syn) + len(clients_ack) + len(clients_none) == len(client_packets)
+    #clients = set(p.source_port for p in client_packets)
+    #client_destinations = set(p.destination_port for p in client_packets)
+    #clients_syn = [p for p in client_packets if p.syn]
+    #clients_ack = [p for p in client_packets if p.ack]
+    #clients_none = [p for p in client_packets if not p.ack and not p.syn]
+    #assert len(clients) == 1
+    #assert len(client_destinations) == 1
+    #assert len(clients_syn) + len(clients_ack) + len(clients_none) == len(client_packets)
 
-    print('SERVER PACKETS')
+    ##print('SERVER PACKETS')
 
-    server_packets = [p for p in packets if p.is_server_packet]
-    servers = set(p.destination_port for p in server_packets)
-    server_sources = set(p.source_port for p in server_packets)
-    print(len(server_packets))
-    assert len(servers) == 1
-    assert len(server_sources) == 1
+    #server_packets = [p for p in packets if p.is_server_packet]
+    #server_syn_ack = [p for p in packets if p.syn_ack]
+    #servers = set(p.destination_port for p in server_packets)
+    #server_sources = set(p.source_port for p in server_packets)
+    #assert len(servers) == 1
+    #assert len(server_sources) == 1
 
+    #print(
+    #    f"Percentage of SYN Packets were SYN-ACKed: "
+    #    f"{len(server_syn_ack)/len(clients_syn)*100:.2f}%"
+    #)
+    #print(
+    #    f"Percentage of SYN Packets were ACKed: "
+    #    f"{len(clients_ack)/len(clients_syn)*100:.2f}%"
+    #)
+
+    initiated_packets = [p for p in packets if p.initiated]
+    acked_packets = [p for p in packets if p.acked]
+
+    print('source ports')
+    print(set((p.source_port for p in packets)))
+    print('destination ports')
+    print(set((p.destination_port for p in packets)))
+
+    print(
+        "Percentage of Acked Packets: "
+        f"{len(acked_packets)/len(initiated_packets):.2f}%"
+    )
     assert len(client_packets) + len(server_packets) == len(packets)
  
 
@@ -365,7 +392,7 @@ def main():
     packets = Packet.create_packets(
         data=data[len(header.raw):],
         header_length=PACKET_HEADER_LENGTH,
-        n_packets=100
+        #n_packets=100
     )
     analyze_packets(packets)
    
