@@ -5,19 +5,20 @@ int bitcount_sol_signed(int n);
 int bitcount_sol(unsigned n);
 
 int main() {
-    assert(bitcount(0) == 0);
-    assert(bitcount(1) == 1);
-    assert(bitcount(3) == 2);
-    assert(bitcount(4) == 1);
-    assert(bitcount(8) == 1);
-    assert(bitcount(15) == 4);
-    assert(bitcount(16) == 1);
+    assert(bitcount_sol(0) == 0);
+    assert(bitcount_sol(1) == 1);
+    assert(bitcount_sol(3) == 2);
+    assert(bitcount_sol(4) == 1);
+    assert(bitcount_sol(8) == 1);
+    assert(bitcount_sol(15) == 4);
+    assert(bitcount_sol(16) == 1);
     // harder case:
-    assert(bitcount(0xfffffff) == 28); 
+    assert(bitcount_sol(0xfffffff) == 28); 
     assert(bitcount_sol(0xffffffff) == 32); 
     printf("OK\n");
 }
 
+int bitcount_pop(unsigned n) { return __builtin_popcount(n);}
 
 int bitcount(int n){
     //printf("Num: %d\n", n);
@@ -66,14 +67,42 @@ int bitcount_sol_signed(int n){
 
 int bitcount_sol(unsigned n){
     /*
-    * 
+    * Stretch Goal:
+    *   - Use the fact that x &= (x-1) deletes the rightmost 1-bit
+    *
+    * Why is the above the case?
+    *   - Consider case where x=7
+    *       - In binary:
+    *           - 7 -> 111
+    *           - 6 -> 110
+    *   - Thus
+    *       - 111 & 110 -> 110 (6)
+    *   - Subtracting 0b1 from a given binary number will always
+    *     change the rightmost place to either be a 1 or 0 from 
+    *     the opposite case
+    *
+    *
+    * How can this help to count on-bits?
+    * - Current Approach
+    *       - We currently retrieve the first bit for each bit in the number
+    * - New Approach
+    *       - Deleting the rightmost bit from the number
+    *       - If you continuously delete the right most bit you can 
+    *       - iterate over n and count for each iteration until n hits 0
+    *
+    * Why is the new approach faster?
+    *   - Old Approach
+    *       - You loop over every bit in the integer and identify if the lowest order bit is on
+    *       - Worst_case = Average_case = best_case = n
+    *   - New Approach
+    *       - You are able to always remove the lowest order bit
+    *       - Worst_case = n (i.e. 0b111)
+    *       - Best_cast = 1 (i.e. 0b100 or any number with only a starting on bit)
     */
-    printf("n: %d\n", n);
     int count = 0;
     while (n){
-        count += n & 0x01;
-        n >>= 1;
-        printf("new n: %d\n", n);
+        n &= n-1;
+        count++; 
     }
     return count;
 }
