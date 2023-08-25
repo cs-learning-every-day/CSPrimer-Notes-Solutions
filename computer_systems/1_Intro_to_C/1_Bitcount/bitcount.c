@@ -77,9 +77,15 @@ int bitcount_sol(unsigned n){
     *           - 6 -> 110
     *   - Thus
     *       - 111 & 110 -> 110 (6)
-    *   - Subtracting 0b1 from a given binary number will always
+    *   - Anding 0b1 from a given binary number will always
     *     change the rightmost place to either be a 1 or 0 from 
     *     the opposite case
+    *   - Consider 6
+    *       - In binary:
+    *           - 6 -> 110
+    *           - 5 -> 101
+    *       - Thus
+    *           - 110 & 101 -> 100
     *
     *
     * How can this help to count on-bits?

@@ -1,34 +1,9 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
 
-int ascii[52] = {
-  65,
-  66,
-  67,
-  68,
-  69,
-  70,
-  71,
-  72,
-  73,
-  74,
-  75,
-  76,
-  77,
-  78,
-  79,
-  80,
-  81,
-  82,
-  83,
-  84,
-  85,
-  86,
-  87,
-  88,
-  89,
-  90,
+int ascii[26] = {
   97,
   98,
   99,
@@ -63,24 +38,30 @@ bool ispangram(char *s) {
   // TODO implement this!
   char seen[26] = {};
   while(s){
-    char val = s[0];
+    char val = tolower(s[0]);
     int asc = (int) val;
     printf("s: %p\n", s);
     printf("val: %c\n", val);
     printf("ascii letter: %c\n", asc);
-    for (int i = 0; i<52; i++){
-      if (asc != ascii[i]){
-          continue;
+    
+    // Check if char is in seen
+    bool is_seen = false;
+    for (int i = 0; i<26; i++){
+      if (seen[i] == val){
+          printf("SEEN: %c\n", val);
+        is_seen = true;
+        break;
       }
+    }
+    // Continue while loop if character has been seen
+    if (!is_seen){
       for (int i = 0; i<26; i++){
-        if (seen[i] == val){
-          printf("Already Seen!\n");
-          break;
-        }
-        if (seen[i] == 0){
-          printf("Unseen!\n");
-          seen[i] = val;
-          break;
+        if (asc != ascii[i]){
+            continue;
+        } else {
+            seen[i] = val;
+            printf("ADDED: %c\n", val);
+            break;
         }
       }
     }
@@ -92,11 +73,16 @@ bool ispangram(char *s) {
     printf("Seen #%d: %c\n", i, seen[i]);
     if (seen[i] == 0){
       result = false;
+      break;
     }
   }
   printf("Seen set: %s\n", seen);
   return result;
 }
+
+
+
+
 
 int main() {
   size_t len;
@@ -105,11 +91,12 @@ int main() {
   bool result;
   while ((read = getline(&line, &len, stdin)) != -1) {
     result = ispangram(line);
-    if (result)
+    if (result){
       printf("%s", line);
+    } 
   }
 
-  printf("Result: %i", result);
+  //printf("Result: %i", result);
 
   if (ferror(stdin))
     fprintf(stderr, "Error reading from stdin");
