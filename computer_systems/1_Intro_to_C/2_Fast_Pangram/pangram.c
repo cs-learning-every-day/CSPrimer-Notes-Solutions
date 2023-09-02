@@ -39,16 +39,17 @@ bool ispangram(char *s) {
   char seen[26] = {};
   while(s){
     char val = tolower(s[0]);
+    if(val == 0){break;}
     int asc = (int) val;
-    printf("s: %p\n", s);
-    printf("val: %c\n", val);
-    printf("ascii letter: %c\n", asc);
+    //printf("s: %p\n", s);
+    //printf("val: %c\n", val);
+    //printf("ascii letter: %c\n", asc);
     
     // Check if char is in seen
     bool is_seen = false;
     for (int i = 0; i<26; i++){
       if (seen[i] == val){
-          printf("SEEN: %c\n", val);
+          //printf("SEEN: %c\n", val);
         is_seen = true;
         break;
       }
@@ -56,27 +57,31 @@ bool ispangram(char *s) {
     // Continue while loop if character has been seen
     if (!is_seen){
       for (int i = 0; i<26; i++){
-        if (asc != ascii[i]){
-            continue;
-        } else {
+        if (asc == ascii[i]){
             seen[i] = val;
-            printf("ADDED: %c\n", val);
             break;
         }
       }
     }
-    if(val == 0){break;}
+    bool is_finished = true;
+    for (int i = 0; i<26; i++){
+      if (seen[i] == 0){
+        is_finished = false;
+        break;
+      }
+    }
+    if (is_finished){ break; }
     s++;
   }
   bool result = true;
   for (int i = 0; i<26;i++){
-    printf("Seen #%d: %c\n", i, seen[i]);
+    //printf("Seen #%d: %c\n", i, seen[i]);
     if (seen[i] == 0){
       result = false;
       break;
     }
   }
-  printf("Seen set: %s\n", seen);
+  //printf("Seen set: %s\n", seen);
   return result;
 }
 
