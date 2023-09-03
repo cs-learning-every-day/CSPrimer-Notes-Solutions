@@ -4,17 +4,34 @@
 
 #define STARTING_CAPACITY 8
 
+/*
+* NOTES
+* - Array of 3 integers
+*   - Each integer will be 4 bytes long (32 bits each)
+*   - To access the index 2 it needs to compute
+*     - arr_address + 2 * size(byte)
+*       - In many architectures this is a single instruction
+*     - Allows constant time indexing
+*       - As long as you have fixed size
+*
+*
+*/
+
 typedef struct DA {
   // TODO define our struct
+  int s;
 } DA;
 
 
 DA* DA_new (void) {
   // TODO allocate and return a new dynamic array
+  struct DA DA_new = { 0 };
+  return &DA_new;
 }
 
 int DA_size(DA *da) {
   // TODO return the number of items in the dynamic array
+  return (*da).s;
 }
 
 void DA_push (DA* da, void* x) {
@@ -40,7 +57,10 @@ void DA_free(DA *da) {
 
 int main() {
     DA* da = DA_new();
+    printf("%d\n", (*da).s);
 
+    int size = DA_size(da);
+    printf("%d\n", size);
     assert(DA_size(da) == 0);
 
     // basic push and pop test
