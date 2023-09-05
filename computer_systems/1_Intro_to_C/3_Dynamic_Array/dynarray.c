@@ -19,27 +19,48 @@
 
 typedef struct DA {
   // TODO define our struct
-  int s;
+  int size;
+  void* values[STARTING_CAPACITY];
 } DA;
 
 
 DA* DA_new (void) {
   // TODO allocate and return a new dynamic array
   struct DA DA_new = { 0 };
-  return &DA_new;
+  return (DA*)malloc(sizeof(DA));
 }
 
 int DA_size(DA *da) {
   // TODO return the number of items in the dynamic array
-  return (*da).s;
+  return da->size;
 }
 
 void DA_push (DA* da, void* x) {
   // TODO push to the end
+  int array_size = sizeof(da -> values) / 8;
+  int array_full = 1;
+  for (int i=0; i< array_size; i++){
+    if ((da -> values)[i] == NULL){
+      da -> values[i] = x;
+      da -> size++;
+      array_full = 0;
+      break;
+    }
+  }
 }
 
 void *DA_pop(DA *da) {
   // TODO pop from the end
+  int array_size = sizeof(da -> values) / 8;
+  for (int i=array_size-1; i>=0; i--){
+    if ((da -> values[i]) != NULL){
+      void* val = da -> values[i];
+      (da -> values)[i] = NULL;
+      da -> size--;
+      return val;
+    }
+  }
+  return NULL;
 }
 
 void DA_set(DA *da, void *x, int i) {
@@ -57,15 +78,15 @@ void DA_free(DA *da) {
 
 int main() {
     DA* da = DA_new();
-    printf("%d\n", (*da).s);
 
     int size = DA_size(da);
-    printf("%d\n", size);
     assert(DA_size(da) == 0);
 
     // basic push and pop test
     int x = 5;
     float y = 12.4;
+    printf("first val: %p\n", &x);
+
     DA_push(da, &x);
     DA_push(da, &y);
     assert(DA_size(da) == 2);
@@ -73,6 +94,8 @@ int main() {
     assert(DA_pop(da) == &y);
     assert(DA_size(da) == 1);
 
+    printf("first val: %d\n", *(int*)(da -> values)[0]);
+    printf("first val: %p\n", (da -> values)[0]);
     assert(DA_pop(da) == &x);
     assert(DA_size(da) == 0);
     assert(DA_pop(da) == NULL);
