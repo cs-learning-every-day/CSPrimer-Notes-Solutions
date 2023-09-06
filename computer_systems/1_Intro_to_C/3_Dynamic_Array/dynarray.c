@@ -20,14 +20,26 @@
 typedef struct DA {
   // TODO define our struct
   int size;
-  void* values[STARTING_CAPACITY];
+  int capacity;
+  void **values;
 } DA;
 
 
 DA* DA_new (void) {
   // TODO allocate and return a new dynamic array
-  struct DA DA_new = { 0 };
-  return (DA*)malloc(sizeof(DA));
+  DA* da = (DA*)malloc(sizeof(DA));
+  if (!da){
+    perror("Failed to allocate memory");
+    exit(1);
+  }
+  da -> size = 0;
+  da -> capacity = STARTING_CAPACITY;
+  da -> values = malloc(sizeof(void*) * STARTING_CAPACITY);
+  if (!da->values){
+    perror("Failed to allocate memory");
+    exit(1);
+  }
+  return da;
 }
 
 int DA_size(DA *da) {
@@ -37,38 +49,51 @@ int DA_size(DA *da) {
 
 void DA_push (DA* da, void* x) {
   // TODO push to the end
-  int array_size = sizeof(da -> values) / 8;
-  int array_full = 1;
-  for (int i=0; i< array_size; i++){
-    if ((da -> values)[i] == NULL){
-      da -> values[i] = x;
-      da -> size++;
-      array_full = 0;
-      break;
+  void* new_val = x;
+  if (da -> size >= da -> capacity){
+    int new_capacity = da->capacity+1;
+    void **temp = realloc(da -> values, sizeof(void*) * new_capacity);
+    if (!temp){
+      perror("Failed to allocate memory");
+      free(da -> values);
+      exit(1);
     }
+    da -> values = temp;
+    da -> capacity = new_capacity;
   }
+  for (int i=0; i<da->capacity; i++){
+    void* old_val = da -> values[i];
+    da -> values[i] = new_val;
+    new_val = old_val;
+  }
+  (da->size)++;
 }
 
 void *DA_pop(DA *da) {
   // TODO pop from the end
-  int array_size = sizeof(da -> values) / 8;
-  for (int i=array_size-1; i>=0; i--){
-    if ((da -> values[i]) != NULL){
-      void* val = da -> values[i];
-      (da -> values)[i] = NULL;
-      da -> size--;
-      return val;
-    }
+  int array_size = da -> capacity;
+  void* return_val = (da -> values)[0];
+  for (int i=0;i<array_size;i++){
+    (da -> values)[i] = (da -> values[i+1]);
   }
-  return NULL;
+  da -> size--;
+  return return_val;
 }
 
 void DA_set(DA *da, void *x, int i) {
   // TODO set at a given index, if possible
+  int array_size = da -> capacity;
+  if (i+1 >= array_size) return;
+  void* value = da -> values[i];
+  da -> values[i] = x;
+  if (value != NULL) {(da -> size)++;};
 }
 
 void *DA_get(DA *da, int i) {
   // TODO get from a given index, if possible
+  int array_size = da -> capacity;
+  if (i+1 >= array_size) return NULL;
+  return da -> values[i];
 }
 
 
@@ -89,13 +114,12 @@ int main() {
 
     DA_push(da, &x);
     DA_push(da, &y);
+    printf("size: %d", DA_size(da));
     assert(DA_size(da) == 2);
 
     assert(DA_pop(da) == &y);
     assert(DA_size(da) == 1);
 
-    printf("first val: %d\n", *(int*)(da -> values)[0]);
-    printf("first val: %p\n", (da -> values)[0]);
     assert(DA_pop(da) == &x);
     assert(DA_size(da) == 0);
     assert(DA_pop(da) == NULL);
