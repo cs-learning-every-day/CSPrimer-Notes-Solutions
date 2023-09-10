@@ -101,6 +101,12 @@ Node *Node_new(char *key, void *val){
   return n;
 }
 
+void Node_free(Node *n){
+  free(n->key);
+  free(n);
+
+}
+
 Hashmap *Hashmap_new(){
   Hashmap *h = (Hashmap*)malloc(sizeof(Hashmap));
   h -> n_buckets = STARTING_BUCKETS;
@@ -109,6 +115,19 @@ Hashmap *Hashmap_new(){
 };
 
 void Hashmap_free(Hashmap *h){
+  for (int i=0;i<h->n_buckets;i++){
+    Node *n = h->buckets[i];
+    while (n != NULL){
+      if (n->next == NULL){
+        Node_free(n);
+        n = NULL;
+      } else{
+        Node *x = n->next;
+        Node_free(n);
+        n = x;
+      }
+    }
+  }
   free(h);
 }
 
