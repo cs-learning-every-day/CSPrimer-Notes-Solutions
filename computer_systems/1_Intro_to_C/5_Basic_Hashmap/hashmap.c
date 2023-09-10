@@ -83,6 +83,21 @@ typedef struct Hashmap {
   void **buckets;
 } Hashmap;
 
+typedef struct Node {
+  struct Node *next;
+  char *key;
+  void* val;
+
+} Node;
+
+
+Node *Node_new(Node *prev, char *key, void *val){
+  Node *n = (Node*)malloc(sizeof(Node));
+  prev -> next = n;
+  n -> key = key;
+  n -> val = val;
+  return n;
+}
 
 Hashmap *Hashmap_new(){
   Hashmap *h = (Hashmap*)malloc(sizeof(Hashmap));
@@ -101,12 +116,15 @@ int hash_func(long x, int m){
 
 void Hashmap_set(Hashmap *h, char key[], void *val){
   int hash = hash_func((long)key, h->n_buckets);
-  h->buckets[hash] = val;
+  h->buckets[hash] = Node_new(
+    NULL, key, val
+  );
 }
 
 void *Hashmap_get(Hashmap *h, char key[]){
   int hash = hash_func((long)key, h->n_buckets);
-  return h->buckets[hash];
+  Node *n = h->buckets[hash];
+  return n->val;
 }
 
 void Hashmap_delete(Hashmap *h, char key[]){
