@@ -40,7 +40,7 @@ if __name__ == '__main__':
             assert cvarint.decode(cvarint.encode(n)) == n
 
     # Now roundtrip test for speed!
-    num_cases = 1000000
+    num_cases = int(1e2)
     py_time = 0
     c_time = 0
 

@@ -2,38 +2,51 @@
 #include <Python.h>
 
 static PyObject *cvarint_encode(PyObject *self, PyObject *args) {
-    unsigned long long val = 0;
+    unsigned long long n = 0;
+    int i = 0;
+    char out[10];
+    char part;
     
-    if (!PyArg_ParseTuple(args, "K", &val)){
+    if (!PyArg_ParseTuple(args, "K", &n)){
+        printf("WARNING: Couldn't read args!\n");
         return NULL;
     }
-    char arr[10];
-    int parts_length = 0;
-    while (val > 0){
-        int part = val & 0x7f;
-        val >>= 7;
-        int res = val ? 0x80 : 0x00;
-        part |= res;
-        arr[parts_length] = part;
-        parts_length++;
+    while (n>0){
+        part = n & 0x7f;
+        n >>= 7;
+        if (n > 0){
+            part |= 0x80;
+        } else {
+            part |= 0x00;
+        }
+        out[i++] = part;
     }
-    return PyBytes_FromStringAndSize(byte_arr, parts_length);
+    printf("n: %llu\n", n);
+    return PyBytes_FromStringAndSize(out,i);
 }
 
 static PyObject *cvarint_decode(PyObject *self, PyObject *args) {
-    Py_buffer varn;
+    const char *varn;
+    char b;
+    unsigned long long n = 0;
+    int i, shamt = 0;
 
-    if (!PyArg_ParseTuple(args, "y*", &varn)){
+    if (!PyArg_ParseTuple(args, "y", &varn)){
+        printf("WARNING: Couldn't read args!\n");
         return NULL;
     }
-    char *data = varn.buf;
-    Py_ssize_t length = varn.len;
-    unsigned long long n = 0;
-    for (int i=length-1; i>=0; i--){
-        n <<= 7;
-        n |= (data[i] & 0x7f);
+
+    for(int i =0; 0; i++){
+        b = varn[i];
+
+        if (b == 0) break;
+        n |= ((unsigned long long)(b & 0x7f ) << shamt);
+        shamt += 7;
     }
     return PyLong_FromUnsignedLongLong(n);
+
+
+   
 }
 
 static PyMethodDef CVarintMethods[] = {

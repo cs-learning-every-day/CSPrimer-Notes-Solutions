@@ -20,7 +20,7 @@
 typedef struct DA {
   int size;
   int capacity;
-  void **values; // Pointer to an array of void pointers
+  void** values; // Pointer to an array of void pointers
 } DA;
 
 DA *DA_new(void) {
@@ -31,7 +31,7 @@ DA *DA_new(void) {
   }
   da->size = 0;
   da->capacity = STARTING_CAPACITY;
-  da->values = malloc(sizeof(void *) * STARTING_CAPACITY);
+  da->values = malloc(sizeof(void*) * STARTING_CAPACITY);
   for (int i = 0; i < STARTING_CAPACITY; i++) {
     da->values[i] = NULL;
   }
@@ -47,7 +47,14 @@ int DA_size(DA *da) { return da->size; }
 void DA_push(DA *da, void *x) {
   void *new_val = x;
   if (da->size >= da->capacity) {
-    int new_capacity = da->size + 1;
+    // Common pattern to double the array when resizing
+    // Why not increase by 1?
+    // If we pay the cost of copying n things, we should 
+    // be able to do n subsequent pushes. This leads to an amortized
+    // contant time complexity of doubling the array
+    // If we increase by 1, we'll pay the cost of copying n values
+    // at every push exceeding capacity
+    int new_capacity = da->size * 2;
     // Increasing the size of memory allocated to da->values to the new capacity
     // to allow addition of extra element
     void **temp = realloc(da->values, sizeof(void *) * new_capacity);
