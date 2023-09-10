@@ -88,15 +88,15 @@ typedef struct Node {
   struct Node *next;
   char *key;
   void* val;
-
 } Node;
 
 
 Node *Node_new(char *key, void *val){
   Node *n = (Node*)malloc(sizeof(Node));
   n -> next = NULL;
-  printf("key: %p", key);
-  n -> key = key;//(char*)malloc(strlen(key)+1);
+  char *new_key = (char*)malloc(strlen(key)+1); 
+  strcpy(new_key, key);
+  n -> key = new_key;
   n -> val = val;
   return n;
 }
@@ -138,7 +138,7 @@ void *Hashmap_get(Hashmap *h, char key[]){
   if (n == NULL){
     return n;
   }
-  while(n->key != key){
+  while(strcmp(n->key,key) != 0){
     if (n->next == NULL){
       exit(1);
     }
