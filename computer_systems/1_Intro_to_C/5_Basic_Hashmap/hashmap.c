@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define STARTING_BUCKETS 8
 #define MAX_KEY_SIZE 128 //TODO - THis is a random value
@@ -91,10 +92,11 @@ typedef struct Node {
 } Node;
 
 
-Node *Node_new(Node *prev, char *key, void *val){
+Node *Node_new(char *key, void *val){
   Node *n = (Node*)malloc(sizeof(Node));
-  prev -> next = n;
-  n -> key = key;
+  n -> next = NULL;
+  printf("key: %p", key);
+  n -> key = key;//(char*)malloc(strlen(key)+1);
   n -> val = val;
   return n;
 }
@@ -102,7 +104,7 @@ Node *Node_new(Node *prev, char *key, void *val){
 Hashmap *Hashmap_new(){
   Hashmap *h = (Hashmap*)malloc(sizeof(Hashmap));
   h -> n_buckets = STARTING_BUCKETS;
-  h -> buckets = malloc(sizeof(void*) * STARTING_BUCKETS);
+  h -> buckets = calloc(STARTING_BUCKETS, sizeof(void*));
   return h;
 };
 
@@ -116,14 +118,32 @@ int hash_func(long x, int m){
 
 void Hashmap_set(Hashmap *h, char key[], void *val){
   int hash = hash_func((long)key, h->n_buckets);
-  h->buckets[hash] = Node_new(
-    NULL, key, val
-  );
+  Node *n = h->buckets[hash];
+  if (n == NULL){
+    h->buckets[hash] = Node_new(key, val);
+    return;
+  } 
+  else{
+    Node *nn = Node_new(key, val);
+    nn->next = n;
+    h->buckets[hash] = nn;
+  }
+
+  
 }
 
 void *Hashmap_get(Hashmap *h, char key[]){
   int hash = hash_func((long)key, h->n_buckets);
   Node *n = h->buckets[hash];
+  if (n == NULL){
+    return n;
+  }
+  while(n->key != key){
+    if (n->next == NULL){
+      exit(1);
+    }
+    n = n->next;
+  }
   return n->val;
 }
 
@@ -164,7 +184,8 @@ int main() {
   }
   for (i = 0; i < n; i++) {
     sprintf(key, "item %d", i);
-    assert(Hashmap_get(h, key) == &ns[i]);
+    void *val = Hashmap_get(h, key);
+    assert(val == &ns[i]);
   }
 
   Hashmap_free(h);
