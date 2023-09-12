@@ -168,6 +168,8 @@ void *Hashmap_get(Hashmap *h, char key[]){
 
 void Hashmap_delete(Hashmap *h, char key[]){
   int hash = hash_func((long)key, h->n_buckets);
+  Node *n = h->buckets[hash];
+  free(n);
   h->buckets[hash] = NULL;
 }
 
