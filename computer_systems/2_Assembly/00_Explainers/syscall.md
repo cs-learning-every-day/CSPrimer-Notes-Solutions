@@ -1,0 +1,13 @@
+- System Call
+    - Kind of like a function that the operating system itself exposes
+    - To expose functionality that should be protected in some way
+        - We don't want user written programs to interact with this functionality directly
+        - Should be disintermediated by Operating System
+            - The OS evaluates whether you have permissions for this action
+- Example
+    - Read from a file on disk
+        - User program shouldn't be able to do this (even in Assembly)
+        - Should explicitly ask the OS
+            - I.e. the SYS_read (3) call
+- System Calls can be found:
+    - /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/syscall.h
