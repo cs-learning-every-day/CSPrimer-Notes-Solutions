@@ -4,7 +4,7 @@
 #include <string.h>
 
 #define STARTING_BUCKETS 8
-#define MAX_KEY_SIZE 128 //TODO - THis is a random value
+#define MAX_KEY_SIZE 32
 
 // Decouples the rest of the code from the type of the hash
 // that you return
@@ -43,46 +43,67 @@ Hashmap* Hashmap_new(){
 
 void Hashmap_free(Hashmap* h){
   //TODO free all the nodes including string copies
+  Node *prior, *n;
+  for (int i = 0;i<h->num_buckets;i++){
+    n = h->buckets[i];
+    while (n != NULL){
+      prior = n;
+      n = n->next;
+      free(prior->key);
+      free(prior);
+    }
+  }
   free(h->buckets);
   free(h);
 }
 
 void Hashmap_set(Hashmap *h, char *key, void *value){
-  Node *n = malloc(sizeof(Node));
+  Hash hash = djb2(key);
+  int i = hash % h->num_buckets;
+  Node *n = h->buckets[i];
+  while (n != NULL){
+    if (n->hash == hash && strncmp(key, n->key,MAX_KEY_SIZE) == 0){
+      n->value = value;
+      return;
+    }
+    n = n->next;
+  }
+  n = malloc(sizeof(Node));
   n->key = strdup(key);
   n->value = value;
-  n->hash = djb2(key);
-  int i = n->hash% h->num_buckets;
-  printf("%p\n", n);
-  printf("%p\n", h->buckets[i]);
-  if (h->buckets[i] == NULL){
-    h->buckets[i] = n;
-  }
-  Node *new_n = h->buckets[i];
-  while(new_n->next != NULL){
-    new_n = new_n->next;
-  }
-  new_n->next = n;
+  n->hash = hash;
+  n->next = h->buckets[i];
+  h->buckets[i] = n;
 }
 
 void *Hashmap_get(Hashmap *h, char *key){
   Hash hash = djb2(key);
   Node *n = h->buckets[hash % h->num_buckets];
-  if (n == NULL){
-    return n;
-  }
-  while (n->key != key){
+  while (n != NULL){
+    if (n->hash == hash && strncmp(key, n->key,MAX_KEY_SIZE) == 0){
+      return n->value;
+    }
     n = n->next;
   }
-  return n->value;
+  return NULL;
 }
 
 void Hashmap_delete(Hashmap *h, char *key){
-  int i = djb2(key) % h->num_buckets;
-  Node *n = h->buckets[i];
-  if (n != NULL){
-    free(n);
-    h->buckets[i] = NULL;
+  Hash hash = djb2(key);
+  int i = hash % h->num_buckets;
+  Node *prior = NULL, *n = h->buckets[i];
+  while (n != NULL){
+    if (n->hash == hash && strncmp(key, n->key,MAX_KEY_SIZE) == 0){
+      if (prior==NULL){
+        h->buckets[i] = NULL;
+      } else{
+        prior->next = n->next;
+      }
+      free(n);
+      return;
+    }
+    prior = n;
+    n = n->next;
   }
 }
 
