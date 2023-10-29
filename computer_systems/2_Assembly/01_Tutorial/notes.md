@@ -142,3 +142,133 @@ buffer:       resb 64     ; reserve 64 bytes
 wordvar:      resw 1      ; reserve a word
 realarray:    resw 1      ; array of ten reals
 ```
+
+### Using a C Library
+- See hola.asm
+- Requirements
+    - C functions (or any function exported from one module to another)
+        - Must be prefixed with underscores
+    - Call stack (rsp) must be aligned on a 16-byte boundary
+    - When accessing named variables, `rel` prefix is required
+
+### Understanding Calling Conventions
+- Calling Conventions set by AMD64 ABI Reference
+- Pass as many parameters as will fit in registers
+    - Order in which registers are allocated
+        - Integers and Pointers
+            - rdi, rsi, rdx, rcx, r8, r9
+        - Floating Point (float, double)
+            - xmm0, xmm1, xmm2, xmm3, xmm4, xmm5, xmm6, xmm7
+    - Additional Parameters
+        - Pushed on the stack (rsp), right to left
+        - *Removed by the caller* after the call
+        - After parameters are pushed, call instruction is made
+            - Return address is at [rsp]
+            - First memory parameter is at [rsp+8]
+        - Stack pointer `rsp` must be aligned to a 16 byte boundary before making a call
+            - You have to push something, or subtract 8 from `rsp`
+- Registers the called function is required to preserve (caller-save registers)
+    - `rbp`, `rbx`, `r12`, `r13`, `r14`, `r15`
+    - All others are free to be changed by the called function
+- Integers are returned in `rax` or `rdx:rax` 
+    - Floating point values are returned in `xmm0` or `xmm1:xmm0`
+
+### Fibonacci Program
+- See fib.asm
+- New Instructions
+    - `push x`
+        - Decrement `rsp` by the size of the operand, then store `x` in `[rsp]`
+    - `pop x`
+        - Move `[rsp]` into `x`, then increment `rsp` by the size of the operand
+    - `jnz label`
+        - If the processor's Z (zero) flag is set, jump to the given label
+    - `call label`
+        - Push the address of the next instruction, then jump to the label
+    - `ret`
+        - Pop into the instruction pointer
+
+## Mixing C and Assembly Language
+- Consider the following Assembly Program
+```asm
+; -----------------------------------------------------------------------------
+; A 64-bit function that returns the maximum value of its three 64-bit integer
+; arguments.  The function has signature:
+;
+;   int64_t maxofthree(int64_t x, int64_t y, int64_t z)
+;
+; Note that the parameters have already been passed in rdi, rsi, and rdx.  We
+; just have to return the value in rax.
+; -----------------------------------------------------------------------------
+
+        global  maxofthree
+        section .text
+maxofthree:
+        mov     rax, rdi                ; result (rax) initially holds x
+        cmp     rax, rsi                ; is x less than y?
+        cmovl   rax, rsi                ; if so, set result to y
+        cmp     rax, rdx                ; is max(x,y) less than z?
+        cmovl   rax, rdx                ; if so, set result to z
+        ret                             ; the max will be in rax
+```
+
+- C Progrma that calls this function
+```C
+/*
+ * A small program that illustrates how to call the maxofthree function we wrote in
+ * assembly language.
+ */
+
+#include <stdio.h>
+#include <inttypes.h>
+
+int64_t maxofthree(int64_t, int64_t, int64_t);
+
+int main() {
+    printf("%ld\n", maxofthree(1, -4, -7));
+    printf("%ld\n", maxofthree(2, -6, 1));
+    printf("%ld\n", maxofthree(2, 3, 1));
+    printf("%ld\n", maxofthree(-2, 4, 3));
+    printf("%ld\n", maxofthree(2, -6, 5));
+    printf("%ld\n", maxofthree(2, 4, 6));
+    return 0;
+}
+```
+
+- To compile the asm code and execute the C program (Linux)
+    - `nasm -felf64 maxofthree.asm && gcc callmaxofthree.c maxofthree.o && ./a.out`
+    
+
+## Conditional Instructions
+- After arithmetic or logic instruction, or `cmp` instruction, the processor set or clear bits in `rflags`
+    - Interesting flags
+        - `s` -> sign
+        - `z` -> zero
+        - `c` -> carry
+        - `o` -> overflow
+- This allows us to perform a jump, move or est based on the new flag settings
+- Examples
+    - `jz L`
+        - Jump to Label L if the result of the previous operation was zero
+    - `cmovno x,y`
+        - x <- y if the last operation did not overflow
+    - `setc x`
+        - x <- 1 if the last operation had a carry, but x <- 0 otherwise
+        - x must be a byte-size register or memory location
+- There base forms for conditional instructions
+    - `j` -> Conditional Jump
+    - `cmov` -> Conditional Move
+    - `set` -> Conditional Set
+- Conditional Instruction suffixes
+    - Examples
+        - le -> Less or equal
+        - z -> zero
+        - nz -> not zero
+
+
+## Command Line Arguments
+- In C
+    - `main` function is -> `int main(int argc, char** argv)`
+- In assembly
+    - `argc` is in `rdi`
+    - `argv` (pointer) is in `rsi
+- See `echo.asm`
