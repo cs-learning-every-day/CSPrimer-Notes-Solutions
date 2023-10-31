@@ -20,6 +20,16 @@
 - Program Counter (Instruction Pointer)
     - Stores the address of the next instruction to pass through the fetch-decode-execute cycle
     - Very iterative progress
+    - This will point to the memory address of the instruction being executed in a given program
+        - In LLDB (for assembly and C programs (w/o Debug Flag))
+            - `rip` will store the instruction pointer
+                - At beginning of execution, will point to the first instruction of a given program
+            - On the LHS you'll see memory address of each instruction
+                - Each instruction has a certain byte size
+            - As you step through the program, `rip` will point to the instruction to be executed next
+    - In Reality
+        - We don't pull them 1-1
+            - We pull them in batch and populate an instruction cache, but you can imagine "fetching" from the cache
 - What makes the machine run?
     - The CPU clock which ticks a certain amount of times
     - 4Ghz -> 4 billion times / second
