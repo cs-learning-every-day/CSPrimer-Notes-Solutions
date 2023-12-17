@@ -1,21 +1,22 @@
 ; Mov is turing complete, any computable program can be rewritten in just mov instructions
 ;
 ;
+; rdi: matrix
+; esi: rows
+; edx: cols
+; ecx: rindex
+; r8d: cindex
+
+; Simplifications:
+; Understanding the microarchitecture reveals that these 
+; changes don't actually make any difference
 
 section .text
 global index, _main
 _main:
 
 index:
-	; TODO - Make General
-	imul ecx, edx ; Multiply indices by 4 bytes to get offset
-	add ecx, r8d
-	imul ecx, ecx, 4
-	add rdi, rcx ; Add offset to matrix pointer
-	mov rax, [rdi] ; Dereference pointer to rax
-	; rdi: matrix
-	; esi: rows
-	; edx: cols
-	; ecx: rindex
-	; r8d: cindex
+	imul ecx, edx ; Multiply rows by index
+	add ecx, r8d ; Add column index to intermediate result
+	mov eax, [rdi + 4 * rcx] ; Dereference pointer to rax
 	ret 
