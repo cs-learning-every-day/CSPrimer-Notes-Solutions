@@ -2,16 +2,11 @@ section .text
 global pangram
 
 pangram:
-	call _prep
-
-_prep: 
 	xor rsi, rsi ; Create bitset
 	xor rax, rax ; Prep - zero out rax
 	xor rcx, rcx ; Prep - Zero out rcx
 	xor rdx, rdx ; Prep - zero out rdx
 	xor rbp, rbp ; Prep - zero out rbp
-	mov dl, 0x1f ; Move value into dl for masking
-	mov r11d, 0x07fffffe ; MOve value into r11d for masking
 
 _looping: 
 	mov al, [rdi] ; Read first byte from rdi
@@ -19,7 +14,7 @@ _looping:
 	jz _exit; If 0, jump to exit
 	cmp al, 0x40 ; Ignore first 64 chars of ascii
 	jl _looping ; Take next byte if it is any lower than 64
-	and al, dl ; Bitwise and of al register to mask out 0x1f
+	and al, 0x1f ; Bitwise and of al register to mask out 0x1f
 	mov cl, al ; Move result of comparison into cl register
 	mov rbp, 0 ; Zero out rbp
 	mov bpl, 0x01 ; Put 1 into an empty register
@@ -29,25 +24,8 @@ _looping:
 	jmp _looping ; Continue Looping 
 
 _exit:
-	and esi, r11d ; Mask out lower bit values
-	cmp esi, r11d ; Compare to mask
-	sete eax ;
-	jz decline ; If equal to mask - then return 0 else 1
-
-_exit: 
-	
-
-_res:
-	mov eax, 0
+	and esi, 0x07fffffe ; Mask out lower bit values
+	cmp esi, 0x07fffffe ; Compare to mask
+	sete al ; Set result of comparison to eax
 	ret
-
-
-_decline:
-	mov eax, 1
-	ret ; 
-
-	
-		section		.data
-mask1:  db			0x1f         
-mask2:	dq			0x07fffffe
 
