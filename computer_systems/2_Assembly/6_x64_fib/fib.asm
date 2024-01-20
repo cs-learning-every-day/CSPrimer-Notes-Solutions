@@ -27,19 +27,31 @@
 section .text
 global fib
 fib:
-	mov rax, rdi ; Move rdi into rax
-	cmp rax, 0   ; Compare to zero
-	je _exit     ; If zero -> Exit
-	cmp rax, 1   ; Compare to one
-	je _exit     ; If one -> Exit
-	sub rdi, 1   ; Decrement RDI by 1
-	call fib     ; Call fib(i-1)
-	mov rdx, rax ; Move result into rbx
-	push rdx     ; Push rbx onto the stack
-	sub rdi, 1   ; Decrement RDI by 1 again
-	call fib     ; Call fib(i-2)
-	pop rdx      ; Pop topmost value from stack into register rbx
-	add rax, rdx ; Add previous result to rax
+	mov rax, rdi	; Move rdi into rax
+
+	cmp rax, 0	; Compare to zero
+	je _exit	; If zero -> Exit
+	cmp rax, 1	; Compare to one
+	je _exit	; If one -> Exit
+
+	push rdi	; Pushing rax value since we need it
+	sub rdi, 1	; Decrement RDI by 1
+	sub rsp, 8	; Aligning th estack
+	call fib	; Call fib(i-1)
+	add rsp, 8	; Realigning the stack
+	pop rdi		; Return stack value to rdi
+
+	push rdi	; Push rdi back onto the stack since we need to reinstate it
+			; before returning to caller (since rdi is caller-saved)
+	push rax	; Push rax onto the stack (so we can retain rax value)
+			; And it isn't overwritten by callee
+	sub rdi, 2	; Decrement RDI by 2 again
+	sub rsp , 8     ; Aligning the stack
+	call fib	; Call fib(i-2)
+	add rsp, 8	; Aligning the stack
+	pop rdx		; Pop return value from stack into register rbx
+	pop rdi		; Pop rdi value back onto stack
+	add rax, rdx	; Add previous result to rax
 
 _exit:
 	ret
