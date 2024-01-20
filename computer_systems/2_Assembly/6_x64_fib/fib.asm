@@ -32,14 +32,14 @@ fib:
 	je _exit     ; If zero -> Exit
 	cmp rax, 1   ; Compare to one
 	je _exit     ; If one -> Exit
-	sub rdi, 1      ; Decrement RDI by 1
+	sub rdi, 1   ; Decrement RDI by 1
 	call fib     ; Call fib(i-1)
-	mov rbx, rax ; Move result into rbx
-	push rbx     ; Push rbx onto the stack
-	sub rdi, 1     ; Decrement RDI by 1 again
+	mov rdx, rax ; Move result into rbx
+	push rdx     ; Push rbx onto the stack
+	sub rdi, 1   ; Decrement RDI by 1 again
 	call fib     ; Call fib(i-2)
-    pop rbx      ; Pop topmost value from stack into register rbx
-	add rax, rbx ; Add previous result to rax
+	pop rdx      ; Pop topmost value from stack into register rbx
+	add rax, rdx ; Add previous result to rax
 
 _exit:
 	ret

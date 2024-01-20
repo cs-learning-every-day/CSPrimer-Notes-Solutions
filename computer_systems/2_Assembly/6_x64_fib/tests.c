@@ -6,8 +6,6 @@ extern int fib(int n);
 int main(void) {
   assert(fib(0) == 0);
   assert(fib(1) == 1);
-  int res = fib(2);
-  printf("res: %d\n", res);
   assert(fib(2) == 1);
   //assert(fib(3) == 2);
   //assert(fib(10) == 55);
