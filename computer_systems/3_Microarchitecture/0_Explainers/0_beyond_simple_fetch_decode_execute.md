@@ -1,0 +1,56 @@
+# Moving beyond the simple fetch/decode/execute model
+## Basic Model
+- Every CPU cycle, a machine code instruction is fetched, decoded and executed
+    - Useful simple model, but wrong
+## Reality
+- Diagram of Intel Skylake microarchitecture: https://en.wikichip.org/w/images/7/7e/skylake_block_diagram.svg
+- Pipelining
+    - Background
+        - We no longer have single cycle CPUs
+        - It is more efficient to design a CPU that move instructions through a CPU like a factory
+        - Simple pipeline
+            - Fetching, decoding, executing all happening independently
+            - While one instruction is being decoded, the next is being fetch
+        - Keeping all of the portions (parts of the pipeline) active at once, you are making the most efficient use of the CPU
+        - Pioneered by non-intel CPUs, now widely used in Intel CPUs
+        - Factory analogy is useful here
+    - Specifics
+        - ~ 20 Pipeline Stages in Intel CPU architectures
+            - Contingent on CPU architecture and generation
+        - Initial latency: ~15-20 CPU Cycles
+        - Cost of pipelining: Branching
+            - When we meet a branch, can take 15-20 CPU cycles before you know whether to start processing the next cycle? 
+        - Branch Prediction / Speculative Execution
+            - B/c of the added latency
+            - We want to guess the outcome of the final evaluation of a branch instruction
+                - Speculatively execute the instructions that we believe would be next
+            - Example
+                - Branch: is number odd
+                - Guess: It's odd
+                - Pushed into the `retirement` pipeline stage
+                    - This can then be made use of by the running program
+                - If we're right?
+                    - Great -> correct outcomes buffered to retirement stage and we made use of them
+                - If not?
+                    - We incur the CPU cycles associated with branch evaluation
+                - What's the cost?
+                    - We need to flush all of those partial results
+                    - We kept the factory stages busy based on our expectation
+                    - In the factory analogy
+                        - This is a cost you may be willing to incur even if you throw things out
+                        - B/c its worse to be slow than wasteful for certain things
+            - Branch Prediction rate on modern CPU is very good for modern workloads
+                - Sometimes you can restructure your code to help branch prediction
+    - Benefits
+        - Better utilize CPU
+        - Increase clock speeds
+    - Costs
+        - More complex architecture
+        - Requires things like speculative execution
+        - Certain security vulnerabilities
+            - https://meltdownattack.com/#faq-detect
+- Instruction Fetching
+    - We aren't really fetching one instruction at a time; It's batched
+    - 
+
+    
