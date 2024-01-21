@@ -36,21 +36,17 @@ fib:
 
 	push rdi	; Pushing rax value since we need it
 	sub rdi, 1	; Decrement RDI by 1
-	sub rsp, 8	; Aligning th estack
 	call fib	; Call fib(i-1)
-	add rsp, 8	; Realigning the stack
 	pop rdi		; Return stack value to rdi
 
-	push rdi	; Push rdi back onto the stack since we need to reinstate it
+	push rdi	; Push rdi back onto the stack since we need to reinstate it - NOT NEEDED
 			; before returning to caller (since rdi is caller-saved)
 	push rax	; Push rax onto the stack (so we can retain rax value)
 			; And it isn't overwritten by callee
 	sub rdi, 2	; Decrement RDI by 2 again
-	sub rsp , 8     ; Aligning the stack
 	call fib	; Call fib(i-2)
-	add rsp, 8	; Aligning the stack
 	pop rdx		; Pop return value from stack into register rbx
-	pop rdi		; Pop rdi value back onto stack
+	pop rdi		; Pop rdi value back onto stack (NOTE: this pop/push isn't needed - see fib_sol.asm
 	add rax, rdx	; Add previous result to rax
 
 _exit:
