@@ -51,6 +51,89 @@
             - https://meltdownattack.com/#faq-detect
 - Instruction Fetching
     - We aren't really fetching one instruction at a time; It's batched
-    - 
+    - Notes for the Skylake Architecture
+    - Fetches 16 bytes at a time / cycle
+    - We are fetching from the L1 instruction cache
+        - We also want to be pre-fetching and putting things into the cache from memory
+- Decoding
+    - Four decoders, with throughput of up to five micro-ops
+    - Micro-ops
+        - Simple Model:
+            - We fetch and execute machine code instructions
+        - Machine code instructions are decoded to mu-ops (micro-ops)
+        - Language internal to the CPU
+            - Machine Code instructions are an external API to this internal language
+        - Example:
+            - add eax [ebx] ; Add to eax what we can dereference from ebx
+            - Translated to a couple of mu-ops:
+                - Load
+                - Arithmetic Add
+        - Simpler instruction set (not public)
+            - There has been some reverse engineering of what they rae in intel
+        - Implications
+            - Instruction fusing
+                - Multiple operations are treated as one; b/c they lead to same outcome
+            - More efficient CPU design
+        - There can also be caching for these micro-ops
+- Out of order execution
+    - We could do this w/o decoding into mu-ops
+        - But they are designed to make it easier to do out-of-order execution
+    - Idea:
+        - If we have a store of some kidn
+            - Like retrieve from memory
+        - We might be able to do some execution of other instructions elsewhere that should logically come later
+    - This also breaks our simple model of fetch/decode/execute
+    - Essentially we try to compute as many independent instructions as possible, irrespective of ordering
+- Execution Ports
+- Execution Engine
+    - Contains 
+        - Execution Units
+        - ALU
+    - We have numerous execution units organized into execution ports
+        - Simple Model: one ALU
+    - With 8 EUs, they aim for a throughput of 4
+        - Theoretically and in certain bursts, we could have 8 pieces of execution at a time
+            - This requires OOO Execution
+            - If we were to schedule a number of instructions to these units
+                - (a + b) + (c)
+                - Final outcome is blocked by adding a + b or a + c
+                    - Can't be doing it entirely in parallel
+            - Depending on dependencies in micro operations decoded in your programs
+                - You may get significant amount of parallelism in your execution
+    - Example:
+        - Integer arithmetic
+            - Adding everything to the same accumulator
+            - Even though you've got 4 ALU execution units, they're all pushed into the pipeline one at a time
+            - Simple change: Reorganizing your code so the operations are independent and they're merged together later on
+                - Would allow 4 executions per CPU cycle
+            - Note: You could have a bottleneck elsewhere
+- Register Renaming
+    - Simple Model implication
+        - Limited # of general purpose registers that were the word size
+            - I.e. 16 registers of 64 bits for intel
+    - Assembly registers are logical, not phsyical registers
+        - CPUs will have a whole bunch of registers
+            - Skylake -> 180 integer registers
+            - Reusable slots with a name associated for them
+        - Useful b/c
+            - When an operation like `add eax, [ebx]` becomes two mu-ops
+                - The result of the store is placed in an unnamed registers
+            - Out of Order Execution under the hood
+                - By zeroing out eax -> you break the dependency chain for the CPU
+                - CPU can think of the instruction of zeroing out and what preceded it as independent
+                - Enables out of order execution
+- SIMD
+    - Registers can be 256 or 512 bits wide, depending on CPU
+    - General Purpose Registers are 64 bits
+        - 1 Integer op / cycle 
+    - ABX 512 Register 
+        - Can hold 16 32 bit integers
+            - Or 32 16 bit integers
+    - You can do vector operations over these SIMD registers
+        - Matrix multiply all integers in two registers
+- All of this above is for one CPU core
+    - 6-core machine will have 6 of these
+    - We have parallelism at the CPU-level on its own before executing multi-core
+
 
     
