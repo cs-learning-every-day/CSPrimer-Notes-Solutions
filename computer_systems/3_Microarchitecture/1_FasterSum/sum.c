@@ -16,21 +16,22 @@ int oldsum(int *nums, int n) {
   return total;
 }
 
-int newsum(int * nums, int n){
-  int total0 = 0;
-  int total1 = 0;
-  int total2 = 0;
-  int total3 = 0;
+/*
+* Weird trick:
+* - Intel Skylake has 8 execution ports with execution units that can be used in parallel
+* - Four of these have integer ALUs -> could theoretically do 4 additions per CPU cycle
+*   - Additions have to be independent
+* - At some point another bottleneck will come
+*   - If we're memory constrainted instead of compute constrained, our optimizations won't help
+*/
+int newsum(int *nums, int n){
+  int t1 = 0, t2 = 0;//, t3 = 0, t4 = 0;//, t5 = 0;
+  for (int i = 0; i<n; i+=5){
+    t1 += nums[i];
+    t2 += nums[i + 1];
+  }
 
-  for (int i = 0; i < n / 4; i++)
-    total0 += nums[i];
-  for (int i = n/4; i< n/2;i++)
-    total1 += nums[i];
-  for (int i = n/2; i< 3*n/4;i++)
-    total2 += nums[i];
-  for (int i = 3*n/4; i< n;i++)
-    total3 += nums[i];
-  return total0 + total1 + total2 + total3;
+  return t1 + t2;// + t3;// + t4;// + t5;
 }
 
 int sum(int *nums, int n) {

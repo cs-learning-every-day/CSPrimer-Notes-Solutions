@@ -15,4 +15,4 @@ bench: benchmark.cc sum.o
 	g++ sum.o benchmark.cc -std=c++11 -lbenchmark -lpthread -o bench
 
 sum.o: sum.c
-	cc -O0 -g -c sum.c 
+	cc -O1 -g -c sum.c 
