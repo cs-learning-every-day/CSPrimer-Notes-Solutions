@@ -43,8 +43,7 @@ int main(int argc, char **argv) {
   unsigned char *bytes_in = malloc(size);
   fread(bytes_in, size, 1, fh);
   fclose(fh);
-  int32_t offset = int32le(bytes_in + 10), 
-          width = int32le(bytes_in + 18),
+  int32_t offset = int32le(bytes_in + 10), width = int32le(bytes_in + 18),
           height = int32le(bytes_in + 22);
 
   unsigned char *colors_out = malloc(row_width(width, BPP_OUT) * height);

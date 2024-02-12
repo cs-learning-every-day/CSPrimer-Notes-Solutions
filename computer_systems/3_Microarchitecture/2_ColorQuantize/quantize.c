@@ -1,16 +1,3 @@
-/*
-* CPU Microarchitecture involves branch prediction
-* Branch misprediction creates a performance hit
-* We want to write branchless code if the compiler can't find branchless version or the predictor
-* is not well set up
-* Objective:
-* - Improve performance of code
-* - Reduce branch misprediction
-*
-* Tips:
-* - Try to extend understanding of why your improvements are improvements
-*/
-
 #define RED0 0x00
 #define RED1 0x20
 #define RED2 0x40
@@ -32,20 +19,14 @@
 #define BLUE2 0x02
 #define BLUE3 0x03
 
-unsigned char quantize(
-  unsigned char red, 
-  unsigned char green,
-  unsigned char blue
-) {
-
+unsigned char quantize(unsigned char red, unsigned char green,
+                       unsigned char blue) {
   unsigned char out = 0;
-  int red_remainder = red % 0x20;
-  if (red >= 0xe0) {
-    out += RED7;
+  int red_diff = red - red % 0x20;
+  if (red_diff != 0x00){
+    out += red_diff;
   }
-  else if (red - red_remainder != 0x00){
-    out += red - red_remainder;
-  }
+
   /*
   if (red < 0x20)
     out += RED0;
@@ -63,15 +44,16 @@ unsigned char quantize(
     out += RED6;
   else
     out += RED7;
-    */
+  */
 
   /*
-  int green_remainder = green % 0x20;
-  if (green - green_remainder != 0x00){
-    int ng = (green - green_remainder) / 0x20;
-    out += (ng-1) * 0x04;
+   * THIS IS WRONG
+  int green_diff = green - green % 0x20;
+  if (green_diff != 0x00){
+    out += (green_diff / 0x20 - 1) * 0x04;
   }
   */
+
   if (green < 0x20)
     out += GREEN0;
   else if (green < 0x40)
@@ -90,10 +72,10 @@ unsigned char quantize(
     out += GREEN7;
 
   /*
-  int blue_remainder = blue % 0x20;
-  if (blue - blue_remainder != 0x00){
-    int nb = (blue - blue_remainder) / 0x20;
-    out += (nb-1) * 0x01;
+   * THIS IS WRONG
+  int blue_diff = blue - blue % 0x20;
+  if (blue_diff != 0x00){
+    out += (blue_diff / 0x20 - 1) * 0x01;
   }
   */
 
@@ -107,5 +89,7 @@ unsigned char quantize(
     out += BLUE3;
 
   return out;
+
+
 }
 

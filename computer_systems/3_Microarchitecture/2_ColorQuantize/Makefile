@@ -27,3 +27,15 @@ clean:
 	rm *.o
 	rm -f bench
 	rm -f convert
+
+
+test:
+	rm teapots_out.bmp
+	rm *.o
+	rm -f bench
+	rm -f convert
+	cc -O1 -c quantize.c
+	cc -O1 -c convert.c
+	cc -O1 quantize.o convert.o -o convert
+	./convert teapots.bmp teapots_out.bmp
+	diff teapots_out.bmp teapots_out_sol.bmp
