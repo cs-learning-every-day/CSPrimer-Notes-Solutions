@@ -22,23 +22,11 @@
 unsigned char quantize(unsigned char red, unsigned char green,
                        unsigned char blue) {
   unsigned char out = 0;
-  int red_diff = red - red % 0x20;
-  if (red_diff != 0x00){
-    out += red_diff;
-  }
-
-  int green_diff = green - green % 0x20;
-  if (green_diff != 0x00){
-    out += (green_diff / 0x20) * 0x04;
-  }
-
-  int blue_diff = blue - blue % 0x40;
-  if (blue_diff != 0x00){
-    out += (blue_diff / 0x40) * 0x01;
-  }
-
+  // This uses the trick that y % x -> y & (x-1) for divisors that are multiples of 2
+  // Additionally replaces multiplication and division by powers of 2 with bit shifting
+  out += red - (red & 0x1f);
+  out += (green - (green & 0x1f)) >> 3;
+  out += (blue - (blue & 0x3f)) >> 6;
   return out;
-
-
 }
 
