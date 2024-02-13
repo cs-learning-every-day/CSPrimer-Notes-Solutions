@@ -27,66 +27,15 @@ unsigned char quantize(unsigned char red, unsigned char green,
     out += red_diff;
   }
 
-  /*
-  if (red < 0x20)
-    out += RED0;
-  else if (red < 0x40)
-    out += RED1;
-  else if (red < 0x60)
-    out += RED2;
-  else if (red < 0x80)
-    out += RED3;
-  else if (red < 0xa0)
-    out += RED4;
-  else if (red < 0xc0)
-    out += RED5;
-  else if (red < 0xe0)
-    out += RED6;
-  else
-    out += RED7;
-  */
-
-  /*
-   * THIS IS WRONG
   int green_diff = green - green % 0x20;
   if (green_diff != 0x00){
-    out += (green_diff / 0x20 - 1) * 0x04;
+    out += (green_diff / 0x20) * 0x04;
   }
-  */
 
-  if (green < 0x20)
-    out += GREEN0;
-  else if (green < 0x40)
-    out += GREEN1;
-  else if (green < 0x60)
-    out += GREEN2;
-  else if (green < 0x80)
-    out += GREEN3;
-  else if (green < 0xa0)
-    out += GREEN4;
-  else if (green < 0xc0)
-    out += GREEN5;
-  else if (green < 0xe0)
-    out += GREEN6;
-  else
-    out += GREEN7;
-
-  /*
-   * THIS IS WRONG
-  int blue_diff = blue - blue % 0x20;
+  int blue_diff = blue - blue % 0x40;
   if (blue_diff != 0x00){
-    out += (blue_diff / 0x20 - 1) * 0x01;
+    out += (blue_diff / 0x40) * 0x01;
   }
-  */
-
-  if (blue < 0x40)
-    out += BLUE0;
-  else if (blue < 0x80)
-    out += BLUE1;
-  else if (blue < 0xc0)
-    out += BLUE2;
-  else
-    out += BLUE3;
 
   return out;
 
