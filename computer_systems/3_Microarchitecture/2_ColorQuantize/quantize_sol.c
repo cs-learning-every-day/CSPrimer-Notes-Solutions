@@ -21,13 +21,6 @@
 
 unsigned char quantize(unsigned char red, unsigned char green,
                        unsigned char blue) {
-  unsigned char out = 0;
-  // This uses the trick that y % x -> y & (x-1) for divisors that are multiples of 2
-  // Additionally replaces multiplication and division by powers of 2 with bit shifting
-
-  out += red - (red & 0x1f);
-  out += (green - (green & 0x1f)) >> 3;
-  out += (blue - (blue & 0x3f)) >> 6;
-  return out;
+  return (red & 0xe0) | (green & 0xe0) >> 3 | (blue >> 6);
 }
 
