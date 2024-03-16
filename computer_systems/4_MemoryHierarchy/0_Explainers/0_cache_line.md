@@ -1,0 +1,14 @@
+# Cache Line
+- Going to RAM is much slower than doing compute
+    - Adding two numbers in RAM takes much longer than CPU cache
+- CPU Cache
+    - RAM 
+        - Series of bytes
+    - CPU caches will pull in "cache lines"
+        - Generally 64 bytes of the RAM 
+            - On some Macs, maybe 128 bytes
+        - Will allow you to cache 16 4 byte integers
+            - Iterating over them iteratively would give you good cache utilization
+- CPU Cache vs. RAM Performance
+    - Cache -> 1 nanosecond
+    - RAM   -> 50-100 nanoseconds

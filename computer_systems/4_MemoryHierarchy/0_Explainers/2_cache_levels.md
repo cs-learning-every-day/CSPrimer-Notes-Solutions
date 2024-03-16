@@ -1,0 +1,50 @@
+# CPU Cache Levels
+- Description 
+    - There is no one best compromise between the size of a CPU cache and its latency. Instead we have ended up with multiple "levels" (L1, L2 etc) that make different trade offs between the two.
+
+## 
+- Intel 486
+    - Had one level of cache
+    - You could buy another chip, which would have a second level of cache
+- Pentium Pro
+    - Incorporated the second level of cache by default
+- Intel Skylake
+    - Overview: https://www.7-cpu.com/cpu/Skylake.html
+    - 1 CPU Cycle -> 0.25 ns
+    - Caches
+        - L1 
+            - Data Cache 
+                - 32KB, 64 B / Cache Line 
+                    - 512 Cache lines
+                - Latency  -> 4 Cycles for simple access via pointer
+                    - ~1 ns to access
+            - Instruction Cache -> 32KB, 64B / Cache Line
+                - Important for branching and pulling next instructions quickly
+            - Dedicated per CPU Core
+        - L2
+            - 256 KB, 64B / Line
+            - Latency -> 12 Cycles
+                - Why slower? 
+                    - B/c its further away from the CPU
+                    - This allows the cache to be bigger
+            - Dedicated per CPU Core
+        - L3
+            - 8MB, 64B / Line
+            - Latency -> 38 CPU Cycles
+                -> 10ns
+            - Shared by all CPU cores
+                - Engineering trade-off
+                - But also useful for multithreaded applications
+                    - Complexity is created when you have cache invalidation
+    - RAM Latency
+        - 42 Cycles + 51 NS 
+            -> 60 Ns
+- You should know what the memory hierarchy overview of your target architecture is
+- Why can't we just enlarge L1 as much as possible?
+    - It's prime real estate, we need space for other things
+- Some Intel machines have L4
+    - This is sometimes then shared with the GPU
+- Every cache miss results in all lower levels being populated
+    - If you miss L1, and get an L2 hit
+        - L1 will be populated with L2 data
+    - Therefore -> higher levels of cache will keep less frequently accessed data
