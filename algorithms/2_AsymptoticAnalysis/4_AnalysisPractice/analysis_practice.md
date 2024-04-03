@@ -1,0 +1,90 @@
+# Analysis Practice
+## Introduction
+- We want a way to discuss algorithms independently of implementation detail
+    - Implementation detail is important, but by having this way of describing algorithms, we are able to take part of the multi-decade conversation
+
+## Cube Problem
+- It's impossible to cut the cube into 1x1x1 cubes from 3x3x3
+- Why?
+    - Any cut I make, will create a 3x3x1
+    - Its equivalent to rotating the square and making any other arbitrary cut
+- Any stacking or organizing I can do will not reduce the number of cuts
+- Ater cutting off one piece, we can just consider the 3x3x2 cube, and treat it as a subproblem where you would need to cut this in <5 cuts
+    - You could then stack this cube such that you take the 3x3x1 into account when making the cuts on the larger cube
+- Key problem solving technique:
+    - What can we ignore here and how to create subproblems?
+- Another intuitive way:
+    - Imagine the inner 1x1x1 cube
+        - It has 6 cuts along it, which gives you a minimum of that many that you need to do
+
+## Notes
+- Is it the case that if my RPI is using an algorithm which has a lower running time than your supercomputer, it will perform faster?
+    - Yes - at some n (assuming it can handle the size) the RPI will perform better
+    - As N -> infinity, constant factors are irrelevant
+- Is it possible to fundamentally say that O(1) is always better than O(logn)?
+    - Hard to say
+    - As a mathematician -> constant time
+    - As a systems programmer
+        - Log time is basically constant. 40 ops for log(1e12) is trivial
+        - Therefore, you need to know the constant factor differentiating these two
+            - If the operation is constant but it takes a long time, it may not be preferable to the logn approach which is much faster on a per-op basis, and you expect small n most of the time
+            - You'll still be happy that worst case time won't be terrible
+- For time analysis
+    - We can specify this as operations, instead of time
+    - B/c if we're discarding constant factors, the actual performance is bounded by the substrate on which the algorithm is implemented and the cost of each operation to get a real sense of the time taken
+        - Considering just operations gets to the root of the issue
+- For space analysis
+    - You need a unit of space (bytes, stack frames, etc.)
+
+### Complexity Zoo
+```python3
+def f1(n):
+    return n * n
+```
+- Assumption -> we're assuming each operation takes a constant unit of time
+- We're assuming we're not operating over cryptographically large primes
+- We don't want to pattern match necessarily, always be clear about your assumptions
+    - This is implicit to statically typed programming languages via typing
+    - In dynamic languages, this isn't possible b/c all types are created as objects and therefore input can be anything
+
+```python3
+def f2(n):
+    return sqrt(n)
+```
+- Depends on:
+    - Implementation of square root under the hood
+        - You could technically implement binary search for perfect squares
+    - Depends on input -> unbounded irrational numbers are generators
+
+```python3
+def lin_sqrt(n):
+    // for k in 1 to n-1
+    // if k * k <= n
+    // and (k + 1) * (k + 1) > n
+    // return k
+```
+- Limits:
+    - O(n)
+    - O(sqrt(n))
+- Considerations from a system perspective:
+    - This has a branch - hard for a branch predictor to get at
+- You'd want to benchmark for small n
+    - In an interview, you'd want to explain why you want to benchmark
+        
+    
+```python3
+def factorial(n):
+    if n == 0:
+        return 1
+    return n * factorial(n-1)
+```
+- Limits:
+    - Time -> O(n)
+        - Counting functions as the measure of operations
+            - Primitive operations are going to be the same irrespective of input
+    - Space -> O(n)
+        - Unit we're counting: Stack frames
+            - This always grows the same amount by which you call the function
+            - x * <pointer_size>
+
+
