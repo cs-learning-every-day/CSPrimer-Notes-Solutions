@@ -88,3 +88,41 @@ def factorial(n):
             - x * <pointer_size>
 
 
+```python3
+def iter_fact(n):
+    k = 1
+    loop 1,n times:
+        k *= n
+        n -= 1
+    return k
+```
+- Same time asymptotically
+- Assuming that linear is faster b/c of:
+    - Fewer function calls, which means fewer allocations to the stack 
+- Possibly recursion is as fast b/c of tail call optimization (TCO)
+    - Tail calls are when you convert a straightforward iterative problem into recursion
+    - This create a factorial function as above, where the recursive call is at the "tail"
+        - But you need to pass an accumulator, and the last call needs to just be a call to the function
+    - The compiler for some languages (i.e. Lisp) will interpret tail call recursion as the iterative solution, and save on the stack frame overhead
+        - Will also use constant space, as the accumulator is overwritten continuously
+
+
+```python3
+def fib(n):
+    if n <= 1:
+        return n
+    return fib(n - 1) + fib(n - 2)
+```
+- How many nodes at the bottom of the call tree, assuming that same amount of splits made?
+    - 2^n
+    - There would be 2^n nodes above it as well
+- What is the tighter bound than 2^n of the fibonacci sequence?
+    - On the fact that it terminates early?
+- It is linear in space
+    - B/c you go DFS through the call stack, so the space hits the base case, then shrinks all the way to the top
+    - Then goes into the next branch
+- "Magic Cache" Version
+    - Linear Time (assuming cache lookup is low cost)
+    - Linear Space
+
+
