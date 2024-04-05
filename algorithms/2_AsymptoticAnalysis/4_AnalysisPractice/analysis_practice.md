@@ -124,5 +124,17 @@ def fib(n):
 - "Magic Cache" Version
     - Linear Time (assuming cache lookup is low cost)
     - Linear Space
+    - Size of the cache: Linear
 
+
+```python3
+def iter_fib(n):
+    a, b = 0, 1
+    n times:
+        a, b = b, a + b
+    return a
+```
+- Linear Time
+- Constant Space
+- This is called bottom up dynamic programming
 
