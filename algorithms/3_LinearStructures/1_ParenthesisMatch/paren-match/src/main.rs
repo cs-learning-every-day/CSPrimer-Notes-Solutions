@@ -26,6 +26,8 @@
 * Plan:
 * stack = Stack()
 * for character in string:
+*   if not is_paren(character):
+*       continue
 *   if stack.is_empty:
 *     stack.push(character)
 *     continue
@@ -64,14 +66,23 @@ fn main() {
     let test_case_1 = "()".to_string();
     assert!(paren_match(test_case_1));
 
+    let test_case_1_5 = ")(".to_string();
+    assert!(!paren_match(test_case_1_5));
+
     let test_case_2 = "(()".to_string();
     assert!(!paren_match(test_case_2));
 
     let test_case_3 = "([())]".to_string();
     assert!(!paren_match(test_case_3));
 
-    let test_case_3 = "abascas)".to_string();
-    assert!(!paren_match(test_case_3));
+    let test_case_4 = "abascas)".to_string();
+    assert!(!paren_match(test_case_4));
+
+    let test_case_5 = "aba)casf".to_string();
+    assert!(!paren_match(test_case_5));
+
+    let test_case_6 = "{([]aaf)$5s[geafd]%^&*}".to_string();
+    assert!(paren_match(test_case_6));
 
     println!("Done");
 }
@@ -79,19 +90,19 @@ fn main() {
 fn paren_match(s: String) -> bool{
     let mut stack: Stack<char> = Stack::new();
     for c in s.chars(){
-        if !is_paren(c){
-            continue;
-        }
-        if stack.is_empty() { 
+        if is_opening_paren(c){
             stack.push(c);
-            continue;
-        };
-        if is_opening_paren(c) && !is_pair(stack.pop().expect("REASON"), c){
-            return false;
         }
-        stack.push(c);
+        if is_closing_paren(c){
+            if stack.is_empty(){
+                return false;
+            }
+            if !is_pair(stack.pop().expect("REASON"), c){
+                return false;
+            }
+        }
     }
-    return true;
+    return stack.is_empty();
 
 }
 

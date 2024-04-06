@@ -1,0 +1,65 @@
+# Motivating Stacks & Queues
+## Introduction
+- Some people find these data structures too simple
+- Some people don't understand why you would use them in practice, particularly stacks
+    - Queues are generally quite inituitive for most people on account of real-world application
+
+## File System
+- Given the following File Structure:
+    - A/
+        - B/
+            - C
+            - D
+        - E/
+            - F
+            - G
+        - H/
+            - I
+            - J
+        - K
+- Consider these as "levels"
+    - Level 0
+        - A/
+    - Level 1
+        - B/
+        - E/
+        - H/
+        - K
+    - Level 2
+        - C
+        - D
+        - F
+        - G
+        - I
+        - J
+- To find some file K, you can choose BFS or DFS
+    - BFS
+        - Check whether K exists on level 0 -> no match
+        - Check whether K exists on level 1 -> match
+    - DFS
+        - Check whether K exists in B/
+        - Check whether K exists in E/
+        - Check whether H exists in H/
+        - Check whether K == K -> Match
+- To implement these searches, you would make use of a queue or stack
+    - BFS -> Queue
+        - As you search, put each directory you are visiting onto the queue
+        - Once you finish searching a level, you pop an element from the queue and search it for one level
+        - Repeart
+    - DFS -> Stack (iterative version)
+        - As you search, put each directory you are visiting onto the stack
+        - Once you reach the leaf node of the tree, you pop an element from the stack, and search it recursively
+        - This is the iterative version of DFS that isn't written recursively
+            - Same code as BFS, just using a stack
+- To generalize: replace "directories" with "non-leaf nodes"
+
+## When to use these?
+- Stack
+    - When you need to understand what you're iterating over in relation to what preceded it
+        - I.e. I want to revisit the thing I have seen the most recently
+    - Example: Abstract syntax tree
+        - To evaluate `f(5, g(1,x))`:
+            - You need to know `f` and `5` preceded the evaluation of `g(1,x)`
+    - Intimately connected to recursion
+
+    
