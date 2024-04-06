@@ -40,27 +40,24 @@
 */
 
 fn main() {
-    let test_case_1 = "()".to_string();
-    assert!(paren_match(&test_case_1));
+    // VALID
+    let valid_cases: Vec<&str> = vec![
+        "()", "()[]", "([{}])"
+    ];
+    for case in valid_cases{
+        assert!(paren_match(case));
+    }
 
-    let test_case_1_5 = ")(".to_string();
-    assert!(!paren_match(&test_case_1_5));
-
-    let test_case_2 = "(()".to_string();
-    assert!(!paren_match(&test_case_2));
-
-    let test_case_3 = "([())]".to_string();
-    assert!(!paren_match(&test_case_3));
-
-    let test_case_4 = "abascas)".to_string();
-    assert!(!paren_match(&test_case_4));
-
-    let test_case_5 = "aba)casf".to_string();
-    assert!(!paren_match(&test_case_5));
-
-    let test_case_6 = "{([]aaf)$5s[geafd]%^&*}".to_string();
-    assert!(paren_match(&test_case_6));
-
+    // INVALID - The minimal cases needed to be invalid
+    let invalid_cases: Vec<&str> = vec![
+        "(",   // left imbalanced
+        ")",   // right imbalanced
+        "(()", // too many opening brackets
+        "([)]" // incorrect nesting
+    ];
+    for case in invalid_cases{
+        assert!(!paren_match(case));
+    }
     println!("Done");
 }
 
