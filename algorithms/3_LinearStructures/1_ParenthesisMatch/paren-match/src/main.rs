@@ -39,105 +39,57 @@
 *
 */
 
-struct Stack<T> {
-    stack: Vec<T>,
-}
-
-impl<T> Stack<T> {
-    fn new() -> Self {
-        Stack { stack: Vec::new() }
-    }
-
-    fn pop(&mut self) -> Option<T> {
-        self.stack.pop()
-    }
-
-    fn push(&mut self, item: T) {
-        self.stack.push(item)
-    }
-
-    fn is_empty(&mut self) -> bool {
-        self.stack.len() == 0
-    }
-}
-
-
 fn main() {
     let test_case_1 = "()".to_string();
-    assert!(paren_match(test_case_1));
+    assert!(paren_match(&test_case_1));
 
     let test_case_1_5 = ")(".to_string();
-    assert!(!paren_match(test_case_1_5));
+    assert!(!paren_match(&test_case_1_5));
 
     let test_case_2 = "(()".to_string();
-    assert!(!paren_match(test_case_2));
+    assert!(!paren_match(&test_case_2));
 
     let test_case_3 = "([())]".to_string();
-    assert!(!paren_match(test_case_3));
+    assert!(!paren_match(&test_case_3));
 
     let test_case_4 = "abascas)".to_string();
-    assert!(!paren_match(test_case_4));
+    assert!(!paren_match(&test_case_4));
 
     let test_case_5 = "aba)casf".to_string();
-    assert!(!paren_match(test_case_5));
+    assert!(!paren_match(&test_case_5));
 
     let test_case_6 = "{([]aaf)$5s[geafd]%^&*}".to_string();
-    assert!(paren_match(test_case_6));
+    assert!(paren_match(&test_case_6));
 
     println!("Done");
 }
 
-fn paren_match(s: String) -> bool{
-    let mut stack: Stack<char> = Stack::new();
+fn paren_match(s: &str) -> bool{
+    let mut stack: Vec<char> = Vec::new();
     for c in s.chars(){
         if is_opening_paren(c){
             stack.push(c);
         }
         if is_closing_paren(c){
-            if stack.is_empty(){
-                return false;
-            }
-            if !is_pair(stack.pop().expect("REASON"), c){
+            if stack.is_empty() || !is_pair(stack.pop().unwrap(), c){
                 return false;
             }
         }
     }
-    return stack.is_empty();
+    stack.is_empty()
 
 }
 
 fn is_pair(c1: char, c2: char) -> bool{
-    return match (c1, c2) {
-        ('[',']') => true,
-        ('(',')') => true,
-        ('{','}') => true,
-        _ => false
-    }
-
+    matches!((c1, c2), ('[',']') | ('(',')') | ('{','}'))
 }
 
-fn is_opening_paren(c: char) -> bool{
-    return match c {
-        '[' => true,
-        '(' => true,
-        '{' => true,
-        _ => false
-    }
+fn is_opening_paren(c: char) -> bool {
+    matches!(c, '[' | '(' | '{')
 }
 
-fn is_paren(c: char) -> bool{
-    return is_opening_paren(c) || is_closing_paren(c);
+fn is_closing_paren(c: char) -> bool {
+    matches!(c, ']' | ')' | '}')
 }
-
-fn is_closing_paren(c: char) -> bool{
-    return match c{
-        ']' => true,
-        ')' => true,
-        '}' => true,
-        _ => false
-    }
-}
-
-
 
 
