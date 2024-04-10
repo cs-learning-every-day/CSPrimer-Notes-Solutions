@@ -78,11 +78,19 @@ use std::collections::HashMap;
 fn main() {
     // VALID TEST CASES
     let valid_cases: HashMap<&str, u32> = HashMap::from([
-        ("(3)", 3), //("(3 + 1)", 4), ("(3 - 1)", 2), ("(3 + (3 - 1))", 5)
+        ("(3+1)", 4), 
+        ("(3-1)", 2), 
+        ("(3+(3-1))", 5),
+        ("(4+(3+(3-1)))", 9)
     ]);
 
-    for (expression, result) in valid_cases.into_iter(){
-        assert!(calculator(expression) == result); 
+    for (expression, expected_result) in valid_cases.into_iter(){
+        println!("Expression: {}", expression);
+        println!("Expected Result: {}", expected_result);
+        let result = calculator(expression);
+        println!("Result: {}", result);
+        assert!(result == expected_result); 
+        println!("Passed");
     }
 
     println!("Done");
@@ -91,46 +99,37 @@ fn main() {
 fn calculator(expression: &str) -> u32{
     let mut stack: Vec<char> = Vec::new();
     for c in expression.chars(){
-        if (stack.is_empty() && c != '('){
-            panic!("Invalid Syntax: First Character must be Opening Parenthesis.\nCharacter: {}", c);
-        }
-        if (c != ')'){
+       println!("Stack: {:?}", stack);
+        if c != '(' &&  c != ')' && c != ' '{
             stack.push(c);
             continue;
         }
-        let mut expression_stack: Vec<char> = Vec::new();
-        while (*stack.last().unwrap() != '(') {
-            expression_stack.push(stack.pop().unwrap());
+        if c == ')'{
+            let operand_1 = stack.pop().unwrap();
+            let operator = stack.pop().unwrap();
+            let operand_2 = stack.pop().unwrap();
+            if operator == '+'{
+                stack.push(
+                    char::from_digit(
+                        operand_1.to_digit(10).unwrap() + operand_2.to_digit(10).unwrap(),
+                        10
+                    ).unwrap()
+                );
+            }
+            else if operator == '-' {
+                stack.push(
+                    char::from_digit(
+                        operand_2.to_digit(10).unwrap() - operand_1.to_digit(10).unwrap(),
+                        10
+                    ).unwrap()
+                );
+            }
+            else {
+                panic!("Invalid Operator: {}", operator);
+            }
         }
-        let operand_2 = expression_stack.pop().unwrap();
-        let operator = expression_stack.pop().unwrap();
-        let operand_1 = expression_stack.pop().unwrap();
-        if operator == '+'{
-            stack.push(
-                char::from_digit(
-                    operand_1.to_digit(10).unwrap() + operand_2.to_digit(10).unwrap(),
-                    10
-                ).unwrap()
-            );
-        }
-        else if operator == '-' {
-            stack.push(
-                char::from_digit(
-                    operand_1.to_digit(10).unwrap() - operand_2.to_digit(10).unwrap(),
-                    10
-                ).unwrap()
-            );
-        }
-        else {
-            panic!("Invalid Operator: {}", operator);
-        }
-        stack.push(c);
     }
 
-    if !stack.len() == 3{
-        panic!("Invalid Computation, stack is of incorrect size");
-    }
-    let _open_paren = stack.pop();
     return stack.pop().unwrap().to_digit(10).unwrap();
 
 
