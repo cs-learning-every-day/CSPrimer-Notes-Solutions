@@ -1,0 +1,11 @@
+# Hazards of Linked Lists
+- Linked Lists are overemphasized in DSA courses
+    - They were very in vogue before CPUs really became much faster, such that it became much more preferable to retrieve data from CPU cache than from RAM
+        - Orders of magnitude faster to pull from cache
+- Each node has to store
+    - Value
+    - Pointer to the next element
+    - Optional: Pointer to the last element
+    - Quite wasteful in terms of amount of space required to save the data
+- Linked lists have very poor cache utilization
+    - By definition, you are chasing pointers as you traverse from one node to the next
