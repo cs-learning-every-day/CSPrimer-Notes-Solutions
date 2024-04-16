@@ -122,19 +122,16 @@ TEST_CASES = [
   (random_ints, sorted(random_ints))
 ]
 
-from tqdm import tqdm
 
 if __name__ == '__main__':
-  for case, expected_result in tqdm(TEST_CASES):
+  for case, expected_result in TEST_CASES:
     try:
-      result = merge_sort(case)
-      assert result == expected_result
+      merge_sort(case)
+      assert case == expected_result
     except AssertionError:
       print(f"Case: {case}")
-      print(f"Expected Result: {result}")
-      print(f"Result: {result}")
+      print(f"Expected Result: {expected_result}")
       raise
-
   print('done')
 
   
