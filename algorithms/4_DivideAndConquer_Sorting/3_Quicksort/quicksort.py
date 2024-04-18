@@ -47,13 +47,39 @@ def quicksort(n: list[int]) -> list[int]:
     def partition(n) -> list[int], list[int], list[int]:
         Lomuto Scheme
         - Take the first value as the pivot
-        - Iterate over the rest of the array
-            - Maintain an invariant whereby there is a section that is smaller than your pivot and a section which is larger
-        - 4 3 6 2 5
-        - 4 
-
-
+        - Iterate over your array, setting your midpoint pointer to the first value and search pointer as the second value
+            - Perform a swap if the value at the index is strictly smaller than the pivot value
+        - To perform a swap:
+            - Swap the ith value with the m+1th value
+        - Pointer advancement
+            - If you make a swap, then both m and i advance
+            - If you don't make a swap, then only i advances
+        - Continue iterating until end of array
+        return n[:m] + n[m] + n[m+1:]
     """
+    if len(n) <= 1:
+        return n
+    if len(n) == 2:
+        if n[0] > n[1]:
+            return [n[1], n[0]]
+        return n
+    (
+        lhs, pivot, rhs
+    ) = partition(n)
+    return quicksort(lhs) + pivot + quicksort(rhs)
+
+
+def partition(n: list[int]) -> tuple[list[int], list[int], list[int]]:
+    pivot = n[0]
+    midpoint = 0
+    idx = 1
+    while idx != len(n):
+        if n[idx] < pivot:
+            n[idx], n[midpoint+1] = n[midpoint+1], n[idx]
+            midpoint += 1
+        idx += 1
+    return n[:midpoint], [n[midpoint]], n[midpoint+1:]
+
 
 
 random_ints = [random.randint(0, 5000) for _ in range(100_000)]
@@ -68,11 +94,12 @@ TEST_CASES = [
 
 if __name__ == "__main__":
     for case, expected_result in TEST_CASES:
+        result = quicksort(case)
         try:
-            quicksort(case)
-            assert case == expected_result
+            assert result == expected_result
         except AssertionError:
             print(f"Case: {case}")
             print(f"Expected Result: {expected_result}")
+            print(f"Result: {result}")
             raise
     print("done")
