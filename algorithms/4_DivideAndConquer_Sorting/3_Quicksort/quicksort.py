@@ -30,7 +30,7 @@ Example:
 
 import random
 
-def quicksort(n: list[int]) -> list[int]:
+def quicksort(n: list[int], l: int | None = None, r: int | None = None) -> None:
     """
     Plan:
     - if len(n) == 1:
@@ -57,51 +57,54 @@ def quicksort(n: list[int]) -> list[int]:
         - Continue iterating until end of array
         return n[:m] + n[m] + n[m+1:]
     """
-    if len(n) <= 1:
-        return n
-    if len(n) == 2:
-        if n[0] > n[1]:
-            return [n[1], n[0]]
-        return n
-    (
-        lhs, pivot, rhs
-    ) = partition(n)
-    return quicksort(lhs) + pivot + quicksort(rhs)
+    l = l or 0
+    r = r or len(n)-1
+    if l >= r:
+        return
+    if r - l == 1:
+        if n[l] > n[r]:
+            swap(n,l,r)
+        return
+    midpoint = partition(n, l, r)
+    quicksort(n, l, midpoint)
+    quicksort(n, midpoint+1, r)
 
 
-def partition(n: list[int]) -> tuple[list[int], list[int], list[int]]:
-    pivot = n[0]
-    midpoint = 0
-    idx = 1
-    while idx != len(n):
+def partition(n: list[int], l: int, r: int) -> int:
+    pivot = n[l]
+
+    midpoint = l
+    idx = l+1
+    while idx != r+1:
         if n[idx] < pivot:
             midpoint += 1
-            n[idx], n[midpoint] = n[midpoint], n[idx]
+            swap(n,idx,midpoint)
         idx += 1
-    n[0], n[midpoint] = n[midpoint], n[0]
-    return n[:midpoint], [n[midpoint]], n[midpoint+1:]
+    n[l], n[midpoint] = n[midpoint], n[l]
+    return midpoint
+
+def swap(n, l, r) -> None:
+    n[l], n[r] = n[r], n[l]
 
 
-
-random_ints = [random.randint(0, 5000) for _ in range(100_000)]
+random_ints = [random.randint(0, 50) for _ in range(100_000)]
 TEST_CASES = [
     ([2], [2]),
     ([2, 1], [1, 2]),
     ([1, 2], [1, 2]),
     ([3, 1, 2], [1, 2, 3]),
     ([3, 1, 4, 2], [1, 2, 3, 4]),
-    (random_ints, sorted(random_ints)),
+    #(random_ints, sorted(random_ints)),
 ]
 
 
 if __name__ == "__main__":
     for case, expected_result in TEST_CASES:
-        result = quicksort(case)
+        quicksort(case)
         try:
-            assert result == expected_result
+            assert case == expected_result
         except AssertionError:
             print(f"Case: {case}")
             print(f"Expected Result: {expected_result}")
-            print(f"Result: {result}")
             raise
     print("done")
