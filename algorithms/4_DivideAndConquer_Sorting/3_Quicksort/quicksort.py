@@ -57,44 +57,42 @@ def quicksort(n: list[int], l: int | None = None, r: int | None = None) -> None:
         - Continue iterating until end of array
         return n[:m] + n[m] + n[m+1:]
     """
-    l = l or 0
-    r = r or len(n)-1
+    l = l if l is not None else 0
+    r = r if r is not None else len(n)-1
     if l >= r:
         return
     if r - l == 1:
         if n[l] > n[r]:
-            swap(n,l,r)
+            swap(n, l, r)
         return
     midpoint = partition(n, l, r)
     quicksort(n, l, midpoint)
     quicksort(n, midpoint+1, r)
 
-
 def partition(n: list[int], l: int, r: int) -> int:
     pivot = n[l]
-
     midpoint = l
     idx = l+1
     while idx != r+1:
         if n[idx] < pivot:
             midpoint += 1
-            swap(n,idx,midpoint)
+            swap(n, idx, midpoint)
         idx += 1
-    n[l], n[midpoint] = n[midpoint], n[l]
+    swap(n, l, midpoint)
     return midpoint
 
-def swap(n, l, r) -> None:
+def swap(n: list[int], l: int, r: int) -> None:
     n[l], n[r] = n[r], n[l]
 
 
-random_ints = [random.randint(0, 50) for _ in range(100_000)]
+random_ints = [random.randint(0, 10) for _ in range(10000)]
 TEST_CASES = [
     ([2], [2]),
     ([2, 1], [1, 2]),
     ([1, 2], [1, 2]),
     ([3, 1, 2], [1, 2, 3]),
     ([3, 1, 4, 2], [1, 2, 3, 4]),
-    #(random_ints, sorted(random_ints)),
+    (random_ints, sorted(random_ints)),
 ]
 
 
