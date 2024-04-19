@@ -75,15 +75,17 @@ def partition(n: list[int]) -> tuple[list[int], list[int], list[int]]:
     idx = 1
     while idx != len(n):
         if n[idx] < pivot:
-            n[idx], n[midpoint+1] = n[midpoint+1], n[idx]
             midpoint += 1
+            n[idx], n[midpoint] = n[midpoint], n[idx]
         idx += 1
+    n[0], n[midpoint] = n[midpoint], n[0]
     return n[:midpoint], [n[midpoint]], n[midpoint+1:]
 
 
 
 random_ints = [random.randint(0, 5000) for _ in range(100_000)]
 TEST_CASES = [
+    ([2], [2]),
     ([2, 1], [1, 2]),
     ([1, 2], [1, 2]),
     ([3, 1, 2], [1, 2, 3]),
