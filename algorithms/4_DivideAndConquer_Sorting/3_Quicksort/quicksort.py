@@ -61,13 +61,10 @@ def quicksort(n: list[int], l: int | None = None, r: int | None = None) -> None:
     r = r if r is not None else len(n)-1
     if l >= r:
         return
-    if r - l == 1:
-        if n[l] > n[r]:
-            swap(n, l, r)
-        return
     midpoint = partition(n, l, r)
     quicksort(n, l, midpoint)
     quicksort(n, midpoint+1, r)
+
 
 def partition(n: list[int], l: int, r: int) -> int:
     pivot = n[l]
@@ -80,6 +77,7 @@ def partition(n: list[int], l: int, r: int) -> int:
         idx += 1
     swap(n, l, midpoint)
     return midpoint
+
 
 def swap(n: list[int], l: int, r: int) -> None:
     n[l], n[r] = n[r], n[l]
