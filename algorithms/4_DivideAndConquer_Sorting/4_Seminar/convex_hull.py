@@ -26,6 +26,8 @@ Problem:
         - And for each line we have to check n points
     - Therefore n**3 performance
 - Divide and Conquer Approach:
-    - How do we divide this into subproblems
+    - Divide the set of points in half
+        - Recurse until you get a trivial convex hull of at most three points
+        - Merge each half together 
 """
 
