@@ -7,12 +7,10 @@
 - We will implement pstree
     - Read the stdin of `ps -o pid,ppid,commm`
 """
+
 import sys
-import subprocess
 from dataclasses import dataclass
-from collections.abc import Sequence
 from collections.abc import Iterable
-from pprint import pprint
 
 
 @dataclass
@@ -21,42 +19,15 @@ class Process:
     ppid: int | None
     comm: str
     user: str
-    children: list['Process']
+    children: list["Process"]
 
     def __str__(self):
         return f"{self.pid} {self.user} {self.comm}"
 
+
 @dataclass
 class ProcessTree:
     root: Process
-
-
-
-def render_process_tree(process_tree: ProcessTree):
-    def _render(node: Process, indent: int):
-        base_string = f"|{(indent-1)*2*'-'}"
-        if node.children:
-            print(f"{base_string}\- {node}")
-            for child in node.children:
-                _render(child, indent+1)
-        else:
-            print(f"{base_string}-= {node}")
-    _render(process_tree.root, 0)
-
-def convert_stdin_to_processes(stdin: Iterable[str] | None = None) -> list[Process]:
-    stdin = stdin or sys.stdin
-    return [convert_line_to_process(line) for idx, line in enumerate(stdin) if idx != 0]
-
-
-def convert_line_to_process(line: str) -> Process:
-    line_segments = line.split(maxsplit=3)
-    return Process(
-        pid=int(line_segments[1]),
-        ppid=int(line_segments[2]),
-        user=line_segments[0],
-        comm=line_segments[3].strip('\n'),
-        children=[]
-    )
 
 
 def create_process_tree(processes: list[Process]) -> ProcessTree:
@@ -83,7 +54,7 @@ def create_process_tree(processes: list[Process]) -> ProcessTree:
                 - Add the root node to the children of the new node
                 - The new node becomes the root node
             - Otherwise, traverse the root node to find the parent of the new node
-                - traverse(node) 
+                - traverse(node)
                 def traverse(node):
                     if node.pid == process.ppid:
                         node.children.append(process)
@@ -92,7 +63,7 @@ def create_process_tree(processes: list[Process]) -> ProcessTree:
                         return
                     for child in node.children:
                         traverse(child)
-        - Once structure is created, to a DFS of the node and print each node
+        - Once structure is created, do a DFS of the node and print each node
             - Retain an understanding of how deep you are, so you know how much to indent the information of that node
     """
     root = None
@@ -106,41 +77,63 @@ def create_process_tree(processes: list[Process]) -> ProcessTree:
         if not root:
             root = process
             processes.pop(i)
-        elif process.ppid == root.pid:
-            root.children.append(process)
-            processes.pop(i)
-        elif process.pid == root.ppid:
-            process.children.append(root)
-            root = process
-            processes.pop(i)
         else:
-            def traverse(node: Process) -> bool:
-                if node.pid == process.ppid:
-                    node.children.append(process)
-                    return True
-                if not node.children:
-                    return False
-                for child in node.children:
-                    result = traverse(child)
-                    if result:
-                        return result
-                return False
-            added = traverse(root)
-            if added:
+            parent = find_parent(root, process)
+            if parent:
+                parent.children.append(process)
                 processes.pop(i)
         i += 1
     return ProcessTree(root=root)
 
-def get_process_stdin() -> subprocess.CompletedProcess[bytes]:
-    return subprocess.run('ps -e -o user,pid,ppid,comm')
+
+def find_parent(node: Process, curr: Process) -> Process | None:
+    if node.pid == curr.ppid:
+        return node
+    if not node.children:
+        return None
+    for child in node.children:
+        result = find_parent(child, curr)
+        if result:
+            return result
 
 
-if __name__ == '__main__':
-    processes = convert_stdin_to_processes()
-    assert len(processes)
+def convert_stdin_to_processes(stdin: Iterable[str] | None = None) -> list[Process]:
+    return [convert_line_to_process(line) for idx, line in enumerate(stdin) if idx != 0]
+
+
+def convert_line_to_process(line: str) -> Process:
+    line_segments = line.split(maxsplit=3)
+    return Process(
+        pid=int(line_segments[1]),
+        ppid=int(line_segments[2]),
+        user=line_segments[0],
+        comm=line_segments[3].strip("\n"),
+        children=[],
+    )
+
+
+def render_process_tree(process_tree: ProcessTree):
+    def _render(node: Process, indent: int):
+        base_string = f"|{(indent-1)*2*'-'}"
+        if node.children:
+            print(f"{base_string}\- {node}")
+            for child in node.children:
+                _render(child, indent + 1)
+        else:
+            print(f"{base_string}-= {node}")
+
+    _render(process_tree.root, 0)
+
+
+def _traverse_test(node: Process):
+    for child in node.children:
+        if node.pid != child.ppid:
+            print(f"Child {child.pid} is not a child of {node.pid}")
+        _traverse_test(child)
+
+
+if __name__ == "__main__":
+    processes = convert_stdin_to_processes(sys.stdin)
     process_tree = create_process_tree(processes)
-    assert process_tree.root
     render_process_tree(process_tree)
-
-
-
+    _traverse_test(process_tree.root)
