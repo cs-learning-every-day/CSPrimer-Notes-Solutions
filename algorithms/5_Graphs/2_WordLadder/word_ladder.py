@@ -54,80 +54,121 @@ Plan:
     - Iterate over the children, and generate the graph, given the child and the updated repository
 - Search the graph with DFS
 """
-from dataclasses import dataclass
+
+from dataclasses import dataclass, field
+from typing import Optional
+
 
 @dataclass
 class Node:
     value: str
-    parent: "Node" | None
-    children: list["Node"]
+    parent: Optional["Node"] = None
+    children: list["Node"] = field(default_factory=lambda: [])
 
-class WordDistance:
+
+class WordLadderSolver:
     def __init__(self, words: list[str]):
         self.words = words
+        self._word_set = set(words)
 
-    def get_min_distance(self, start:str , end:str) -> int:
+    def get_shortest_word_ladder(self, start: str, end: str) -> int:
         if not len(start) == len(end):
             raise ValueError("Start and end word must be of same length")
         words = [w for w in self.words if len(w) == len(start)]
         start_node = Node(value=start)
-        end_node = Node(value=end)
-        self._create_graph(start_node, end_node, words)
+        self._create_graph(start_node, end, words)
+        return self._get_shortest_word_ladder(start_node, end)
+        
+    @classmethod
+    def _get_shortest_word_ladder(
+        cls, node: Node, target: str
+    ) -> int:
+        """
+        Between two words, finds the shortest distance. If there is no connecting word
+        ladder, return 0
+        """
+        queue = [(0, node)]
+        while queue:
+            level, curr = queue.pop()
+            if curr.value == target:
+                break
+            for child in curr.children:
+                queue += [(level+1, child)]
+        else:
+            return 0
+        return level
 
     @classmethod
-    def _create_graph(cls, node: Node, end_node: Node, words: list[str]) -> None:
-        if not words:
-            return
-        if node.value == end_node.value:
-            return
-        _words_to_remove: set[str] = {}
-        for ix in range(len(node.value)):
-            masked_val = cls._get_masked_string(node.value, ix)
-            for word in words:
-                if cls._get_masked_string(word, ix) == masked_val:
-                    node.children.append(Node(
-                        value=word, parent=node, children=[]
-                    ))
-                    _words_to_remove.add(word)
-        words = list(set(words) - _words_to_remove)
+    def _create_graph(cls, node: Node, target: str, words: list[str]) -> bool:
+        if target not in words or node.value == target:
+            return True
+        words_to_remove = set()
+        for word in words:
+            if cls.are_words_one_letter_away(node.value, word):
+                child = Node(value=word, parent=node, children=[])
+                node.children.append(child)
+                words_to_remove.add(word)
         for child in node.children:
-            cls._create_graph(child, end_node, words)
+            res = cls._create_graph(child, target, list(set(words) - words_to_remove))
+            if res:
+                return res
+        return False
+    @classmethod
+    def are_words_one_letter_away(cls, word_a: str, word_b: str) -> bool:
+        if not len(word_a) == len(word_b):
+            raise ValueError("Words passed must be of the same length")
+        return any(
+            cls._get_masked_string(word_a, ix) == cls._get_masked_string(word_b, ix)
+            for ix in range(len(word_a))
+        )
 
     @classmethod
-    def _get_masked_string(cls, s: string, mask_idx: int) -> string:
-        return ''.join([v for i,v in enumerate(s) if i != mask_idx])
+    def _get_masked_string(cls, s: str, mask_idx: int) -> str:
+        return "".join([v for i, v in enumerate(s) if i != mask_idx])
+
+    def is_word_in_dictionary(self, word: str) -> bool:
+        return word in self._word_set
 
 
-
-
-def main(word_distance_solver: WordDistance):
+def main(word_ladder_solver: WordLadderSolver):
     TEST_CASES = [
-        ('head','tail'),
-        ('pig','sty'),
-        ('four','five'),
-        ('wheat','bread'),
-        ('pen','ink'),
-        ('chin','nose'),
-        ('tears','smile'),
-        ('wet','dry'),
-        ('hare','soup'),
-        ('pitch','tents'),
-        ('eye','lid'),
-        ('hare','soup'),
-        ('steal','coins'),
-        ('eel','pie'),
-        ('poor','rich'),
-        ('raven','miser'),
-        ('oat','rye'),
-        ('wood','tree'),
-        ('grass','green'),
-        ('man','ape'),
-        ('cain','abel'),
-        ('flour','bread'),
+        ("head", "tail"),
+        ("pig", "sty"),
+        ("four", "five"),
+        ("wheat", "bread"),
+        ("pen", "ink"),
+        ("chin", "nose"),
+        ("tears", "smile"),
+        ("wet", "dry"),
+        ("hare", "soup"),
+        ("pitch", "tents"),
+        ("eye", "lid"),
+        ("hare", "soup"),
+        ("steal", "coins"),
+        ("eel", "pie"),
+        ("poor", "rich"),
+        ("raven", "miser"),
+        ("oat", "rye"),
+        ("wood", "tree"),
+        ("grass", "green"),
+        ("man", "ape"),
+        ("cain", "abel"),
+        ("flour", "bread"),
     ]
     for case, result in TEST_CASES:
-        distance = word_distance_solver.get_min_distance(case, result)
-        print('-------')
-        print(f'{case} -> {result}: {distance}')
+        assert word_ladder_solver.is_word_in_dictionary(case), f"{case} not in dictionary"
+        assert word_ladder_solver.is_word_in_dictionary(result), f"{result} not in dictionary"
+        distance = word_ladder_solver.get_shortest_word_ladder(case, result)
+        print("-------")
+        print(f"{case} -> {result}: {distance}")
+        assert distance > 0
 
 
+if __name__ == '__main__':
+    words = []
+    with open('words.txt') as f:
+        for line in f:
+            words.append(line.strip().lower())
+
+    word_ladder_solver = WordLadderSolver(words=words)
+    main(word_ladder_solver)
