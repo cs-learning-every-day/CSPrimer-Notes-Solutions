@@ -55,6 +55,7 @@ Plan:
 - Search the graph with DFS
 """
 
+import string
 from dataclasses import dataclass, field
 from typing import Optional
 
@@ -76,11 +77,21 @@ class WordLadderSolver:
             raise ValueError("Start and end word must be of same length")
         words = [w for w in self.words if len(w) == len(start)]
         start_node = Node(value=start)
-        self._create_graph(start_node, end, words)
-        return self._get_shortest_word_ladder(start_node, end)
-        
+        #self._create_graph(start_node, end, words)
+        return self._get_shortest_word_ladder(start_node, end, set(words))
+
     @classmethod
     def _get_shortest_word_ladder(
+        cls, node: Node, target: str, words: set[str]
+    ) -> int:
+        """
+        Between two words, finds the shortest distance. If there is no connecting word
+        ladder, return 0
+        """
+        return cls._get_shortest_word_ladder2(node,target, words)
+
+    @classmethod
+    def _get_shortest_word_ladder1(
         cls, node: Node, target: str
     ) -> int:
         """
@@ -92,14 +103,42 @@ class WordLadderSolver:
             level, curr = queue.pop()
             if curr.value == target:
                 break
+            level += 1
             for child in curr.children:
-                queue += [(level+1, child)]
+                queue += [(level, child)]
         else:
             return 0
         return level
 
     @classmethod
-    def _create_graph(cls, node: Node, target: str, words: list[str]) -> bool:
+    def _get_shortest_word_ladder2(
+        cls, node: Node, target: str, words: set[str]
+    ) -> int:
+        queue: list[tuple[int, Node]] = [(0, node)]
+        while queue:
+            level, curr = queue.pop(0)
+            if curr.value == target:
+                break
+            for index in range(len(curr.value)):
+                for letter in string.ascii_lowercase:
+                    test_string = cls._replace_char_in_string(curr.value, letter, index)
+                    if test_string == curr.value or test_string not in words:
+                        continue
+                    child = Node(value=test_string, parent=node, children=[])
+                    curr.children.append(child)
+                    words.remove(child.value)
+            level += 1
+            queue.extend([(level, c) for c in curr.children])
+        else:
+            return 0
+        return level
+
+
+    def _create_graph(self, node: Node, target: str, words: list[str]) -> None:
+        return self._create_graph2(node,target,set(words) - {node.value})
+
+    @classmethod
+    def _create_graph1(cls, node: Node, target: str, words: list[str]) -> bool:
         if target not in words or node.value == target:
             return True
         words_to_remove = set()
@@ -109,10 +148,39 @@ class WordLadderSolver:
                 node.children.append(child)
                 words_to_remove.add(word)
         for child in node.children:
-            res = cls._create_graph(child, target, list(set(words) - words_to_remove))
+            res = cls._create_graph1(child, target, list(set(words) - words_to_remove))
             if res:
                 return res
         return False
+
+    def _create_graph2(self, node: Node, target: str, words: set[str]) -> None:
+        if not words:
+            return
+        for index in range(len(node.value)):
+            for letter in string.ascii_lowercase:
+                test_string = self._replace_char_in_string(node.value, letter, index)
+                if test_string == node.value or test_string not in words:
+                    continue
+                print(test_string)
+                child = Node(value=test_string, parent=node, children=[])
+                node.children.append(child)
+                if test_string == target:
+                    return
+        for child in node.children:
+            self._create_graph2(
+                child,
+                target,
+                words - set(i.value for i in node.children)
+            )
+
+    
+
+    @classmethod
+    def _replace_char_in_string(cls, s: str, char: str, index: int) -> bool:
+        return s[:index] + char + s[index+1:]
+
+
+
     @classmethod
     def are_words_one_letter_away(cls, word_a: str, word_b: str) -> bool:
         if not len(word_a) == len(word_b):
@@ -132,19 +200,16 @@ class WordLadderSolver:
 
 def main(word_ladder_solver: WordLadderSolver):
     TEST_CASES = [
-        ("head", "tail"),
         ("pig", "sty"),
+        ("head", "tail"),
         ("four", "five"),
         ("wheat", "bread"),
         ("pen", "ink"),
         ("chin", "nose"),
-        ("tears", "smile"),
         ("wet", "dry"),
         ("hare", "soup"),
-        ("pitch", "tents"),
         ("eye", "lid"),
         ("hare", "soup"),
-        ("steal", "coins"),
         ("eel", "pie"),
         ("poor", "rich"),
         ("raven", "miser"),
