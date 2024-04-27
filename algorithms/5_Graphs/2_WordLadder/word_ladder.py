@@ -56,7 +56,7 @@ Plan:
 """
 
 import string
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Optional
 
 
@@ -64,50 +64,51 @@ from typing import Optional
 class Node:
     value: str
     parent: Optional["Node"] = None
-    children: list["Node"] = field(default_factory=lambda: [])
 
 
 class WordLadderSolver:
-    def __init__(self, words: list[str]):
+    def __init__(self, words: set[str]):
         self.words = words
-        self._word_set = set(words)
 
-    def get_shortest_word_ladder(self, start: str, end: str) -> int:
+    def get_shortest_word_ladder(self, start: str, end: str) -> list[str]:
         if not len(start) == len(end):
             raise ValueError("Start and end word must be of same length")
-        return self._get_shortest_word_ladder(
-            Node(value=start),
-            end,
-            set(w for w in self.words if len(w) == len(start))
-        )
+        start_node = Node(value=start)
+        return self._get_shortest_word_ladder(start_node, end, self.words.copy())
 
-    @classmethod
-    def _get_shortest_word_ladder(cls, node: Node, target: str, words: set[str]) -> int:
-        queue: list[tuple[int, Node]] = [(0, node)]
+    def _get_shortest_word_ladder(
+        self, node: Node, target: str, words: set[str]
+    ) -> list[str]:
+        queue = [node]
         while queue:
-            level, curr = queue.pop(0)
+            curr = queue.pop(0)
             if curr.value == target:
-                break
+                return self._create_word_ladder_from_node(curr)
             for index in range(len(curr.value)):
                 for letter in string.ascii_lowercase:
-                    test_string = cls._replace_char_in_string(curr.value, letter, index)
-                    if test_string == curr.value or test_string not in words:
+                    candidate = self._replace_char_in_string(curr.value, letter, index)
+                    if candidate == curr.value or candidate not in words:
                         continue
-                    child = Node(value=test_string, parent=node, children=[])
-                    curr.children.append(child)
-                    words.remove(child.value)
-            level += 1
-            queue.extend([(level, c) for c in curr.children])
+                    child = Node(value=candidate, parent=curr)
+                    queue.append(child)
+                    words.remove(candidate)
         else:
-            return 0
-        return level
+            return []
+
+    @classmethod
+    def _create_word_ladder_from_node(cls, node: Node) -> list[str]:
+        word_ladder = []
+        while node is not None:
+            word_ladder.insert(0, node.value)
+            node = node.parent
+        return word_ladder
 
     @classmethod
     def _replace_char_in_string(cls, s: str, char: str, index: int) -> str:
-        return s[:index] + char + s[index + 1:]
+        return s[:index] + char + s[index + 1 :]
 
     def is_word_in_dictionary(self, word: str) -> bool:
-        return word in self._word_set
+        return word in self.words
 
 
 def main(word_ladder_solver: WordLadderSolver):
@@ -139,10 +140,10 @@ def main(word_ladder_solver: WordLadderSolver):
         assert word_ladder_solver.is_word_in_dictionary(
             result
         ), f"{result} not in dictionary"
-        distance = word_ladder_solver.get_shortest_word_ladder(case, result)
+        word_ladder = word_ladder_solver.get_shortest_word_ladder(case, result)
         print("-------")
-        print(f"{case} -> {result}: {distance}")
-        assert distance > 0
+        print(f"{case} -> {result}: {word_ladder}")
+        assert len(word_ladder) > 0
 
 
 if __name__ == "__main__":
@@ -151,5 +152,5 @@ if __name__ == "__main__":
         for line in f:
             words.append(line.strip().lower())
 
-    word_ladder_solver = WordLadderSolver(words=words)
+    word_ladder_solver = WordLadderSolver(words=set(words))
     main(word_ladder_solver)
