@@ -75,45 +75,14 @@ class WordLadderSolver:
     def get_shortest_word_ladder(self, start: str, end: str) -> int:
         if not len(start) == len(end):
             raise ValueError("Start and end word must be of same length")
-        words = [w for w in self.words if len(w) == len(start)]
-        start_node = Node(value=start)
-        #self._create_graph(start_node, end, words)
-        return self._get_shortest_word_ladder(start_node, end, set(words))
+        return self._get_shortest_word_ladder(
+            Node(value=start),
+            end,
+            set(w for w in self.words if len(w) == len(start))
+        )
 
     @classmethod
-    def _get_shortest_word_ladder(
-        cls, node: Node, target: str, words: set[str]
-    ) -> int:
-        """
-        Between two words, finds the shortest distance. If there is no connecting word
-        ladder, return 0
-        """
-        return cls._get_shortest_word_ladder2(node,target, words)
-
-    @classmethod
-    def _get_shortest_word_ladder1(
-        cls, node: Node, target: str
-    ) -> int:
-        """
-        Between two words, finds the shortest distance. If there is no connecting word
-        ladder, return 0
-        """
-        queue = [(0, node)]
-        while queue:
-            level, curr = queue.pop()
-            if curr.value == target:
-                break
-            level += 1
-            for child in curr.children:
-                queue += [(level, child)]
-        else:
-            return 0
-        return level
-
-    @classmethod
-    def _get_shortest_word_ladder2(
-        cls, node: Node, target: str, words: set[str]
-    ) -> int:
+    def _get_shortest_word_ladder(cls, node: Node, target: str, words: set[str]) -> int:
         queue: list[tuple[int, Node]] = [(0, node)]
         while queue:
             level, curr = queue.pop(0)
@@ -133,66 +102,9 @@ class WordLadderSolver:
             return 0
         return level
 
-
-    def _create_graph(self, node: Node, target: str, words: list[str]) -> None:
-        return self._create_graph2(node,target,set(words) - {node.value})
-
     @classmethod
-    def _create_graph1(cls, node: Node, target: str, words: list[str]) -> bool:
-        if target not in words or node.value == target:
-            return True
-        words_to_remove = set()
-        for word in words:
-            if cls.are_words_one_letter_away(node.value, word):
-                child = Node(value=word, parent=node, children=[])
-                node.children.append(child)
-                words_to_remove.add(word)
-        for child in node.children:
-            res = cls._create_graph1(child, target, list(set(words) - words_to_remove))
-            if res:
-                return res
-        return False
-
-    def _create_graph2(self, node: Node, target: str, words: set[str]) -> None:
-        if not words:
-            return
-        for index in range(len(node.value)):
-            for letter in string.ascii_lowercase:
-                test_string = self._replace_char_in_string(node.value, letter, index)
-                if test_string == node.value or test_string not in words:
-                    continue
-                print(test_string)
-                child = Node(value=test_string, parent=node, children=[])
-                node.children.append(child)
-                if test_string == target:
-                    return
-        for child in node.children:
-            self._create_graph2(
-                child,
-                target,
-                words - set(i.value for i in node.children)
-            )
-
-    
-
-    @classmethod
-    def _replace_char_in_string(cls, s: str, char: str, index: int) -> bool:
-        return s[:index] + char + s[index+1:]
-
-
-
-    @classmethod
-    def are_words_one_letter_away(cls, word_a: str, word_b: str) -> bool:
-        if not len(word_a) == len(word_b):
-            raise ValueError("Words passed must be of the same length")
-        return any(
-            cls._get_masked_string(word_a, ix) == cls._get_masked_string(word_b, ix)
-            for ix in range(len(word_a))
-        )
-
-    @classmethod
-    def _get_masked_string(cls, s: str, mask_idx: int) -> str:
-        return "".join([v for i, v in enumerate(s) if i != mask_idx])
+    def _replace_char_in_string(cls, s: str, char: str, index: int) -> str:
+        return s[:index] + char + s[index + 1:]
 
     def is_word_in_dictionary(self, word: str) -> bool:
         return word in self._word_set
@@ -221,17 +133,21 @@ def main(word_ladder_solver: WordLadderSolver):
         ("flour", "bread"),
     ]
     for case, result in TEST_CASES:
-        assert word_ladder_solver.is_word_in_dictionary(case), f"{case} not in dictionary"
-        assert word_ladder_solver.is_word_in_dictionary(result), f"{result} not in dictionary"
+        assert word_ladder_solver.is_word_in_dictionary(
+            case
+        ), f"{case} not in dictionary"
+        assert word_ladder_solver.is_word_in_dictionary(
+            result
+        ), f"{result} not in dictionary"
         distance = word_ladder_solver.get_shortest_word_ladder(case, result)
         print("-------")
         print(f"{case} -> {result}: {distance}")
         assert distance > 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     words = []
-    with open('words.txt') as f:
+    with open("words.txt") as f:
         for line in f:
             words.append(line.strip().lower())
 
