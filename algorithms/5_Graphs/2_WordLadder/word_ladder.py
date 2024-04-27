@@ -53,6 +53,13 @@ Plan:
             - Add the word as a child to the graph with depth+1
     - Iterate over the children, and generate the graph, given the child and the updated repository
 - Search the graph with DFS
+
+UPDATED PLAN:
+- BFS over the start word
+    - Find every permutation of the word and create it as a node with parent to the start word if it is a valid word and has not yet been seen
+    - Add the node to the queue
+- Once the target word has been found:
+    - Return the word ladder by recording each node value between the root and the leaf node
 """
 
 import string
