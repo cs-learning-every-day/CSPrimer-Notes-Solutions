@@ -1,0 +1,32 @@
+## Asymptotic Analysis of Word Ladder Problem
+- Worst Case is probably not so interesting here
+    - The worst case is the length of the word list
+    - You're saying that you end up with a cluster of words that are all connected to each other
+        - It takes a lot of words to get there
+        - Also it has to be a word that's connected to your starting word
+- In practice, not all words are connected to one another
+- Someone had investigated long word ladder chains
+    - About 20 links is the maximum according to one researcher
+- So the average case is more likely to be interesting
+    - Given that your runtime is dependent on the data and their relationship to each other
+- Figuring out the average case empirically:
+    - Average degree (no of neighbors) is x
+    - Average path length is y
+- In practice, doing worst case is going to depend on how critical it is to be under some lower bound
+    - You want to do this so that you know it's going to be fast enough to meet your constraint
+- For a web service, you want to probably do average case
+- Average case here
+    - Average degree (no of neighbors) is 10
+    - Average path length is 5
+    - Average case: 10^1 + 10^2 + 10^3 + 10^4 + 10^5 = 111,110
+
+- Asymptotic Analysis of creating the new string in Python
+    - `word[:i] + chr(c) + word[i+1:]`
+    - This is O(1), provided that Python is using a memory as backing for the word
+- Asymptotic Analysis of get_neighbors
+    - O(n * m) where n is the length of the word list and m is the length of the word
+
+- In practice, good to get to real terms
+    - We can only run this over 4 or 5 character strings
+        - At 6 characters, it's going to take too long - Knuth has shown this
+    - 
