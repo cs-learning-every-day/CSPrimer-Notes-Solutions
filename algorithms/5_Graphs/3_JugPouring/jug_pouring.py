@@ -51,173 +51,60 @@ def get_neighbors(state: tuple[int,int], max_state: tuple[int,int]):
         is_valid(s)
     ]
 """
+
 from pprint import pprint
-
-
-class Jug:
-    """
-    A jug, perched on a fountain, ready for pouring.
-    All contents assumed to be in litres.
-    """
-
-    def __init__(self, max: int):
-        if max <= 0:
-            raise ValueError("Please provide a non-negative value for max")
-        self.max = max
-        self._content = 0
-
-    def __eq__(self, o: "Jug") -> bool:
-        if not isinstance(o, self.__class__):
-            return False
-        return self.max == o.max and self.content == o.content
-
-
-    def __repr__(self) -> str:
-        return f"Jug(content={self._content}, max={self.max})"
-
-    @property
-    def content(self) -> int:
-        """The current fill of the jug"""
-        content = self._content
-        if not self.is_valid:
-            raise RuntimeError(
-                f"current fill must be bounded by 0 and {max}.\n"
-                f"current: {content}"
-            )
-        return content
-
-    def is_valid(self) -> bool:
-        return 0 <= self._content <= self.max
-
-    def fill(self, amount: int) -> "Jug":
-        """Fills the jug according to some provided amount"""
-        self._content = min((self.max, self._content + amount))
-        return self
-
-    def pour_out(self, amount: int) -> "Jug":
-        self._content -= amount
-        return self
-
-    def fill_up(self) -> "Jug":
-        """Fills up the jug entirely"""
-        self._content = self.max
-        return self
-
-    def empty(self) -> "Jug":
-        """Empties the Jug of its contents"""
-        return self.pour_out(self.content)
-
-
-class JugFactory:
-    @classmethod
-    def fill_up(cls, j: Jug) -> Jug:
-        nj = Jug(max=j.max)
-        nj.fill_up()
-        return nj
-
-    @classmethod
-    def fill(cls, j: Jug, amount: int) -> Jug:
-        nj = Jug(max=j.max)
-        nj.fill(amount)
-        return nj
-
-    @classmethod
-    def empty(cls, j: Jug) -> Jug:
-        return Jug(max=j.max)
-
-    @classmethod
-    def pour_out(cls, j: Jug, amount: int) -> Jug:
-        nj = Jug(max=j.max)
-        nj.fill(j.content)
-        nj.pour_out(amount)
-        return nj
-
-class State:
-    def __init__(self, *jugs: Jug):
-        self.jugs = jugs
-
-    def __repr__(self) -> str:
-        return f"State(jugs={self.jugs})"
-
-    def __hash__(self) -> int:
-        return hash((j for j in self.jugs))
-
-    def __eq__(self, o: "State") -> bool:
-        if not isinstance(o, self.__class__):
-            return False
-        return (
-            len(self.jugs) == len(o.jugs) and
-            all(sj == oj for sj, oj in zip(self.jugs, o.jugs))
-        )
-
-    @property
-    def is_final(self) -> bool:
-        return any(x.content == 4 for x in self.jugs)
-
-    @property
-    def is_valid(self) -> bool:
-        return all(j.is_valid for j in self.jugs)
+from collections import namedtuple
+Jug = namedtuple("Jug", ["content", "max"])
 
 
 def jug_pouring(
-    starting_state: State,
-) -> list[State] | None:
-    queue = [
-        (
-            starting_state,
-            [starting_state]
-        )
-    ]
+    starting_state: tuple[Jug, Jug]
+) -> list[tuple[Jug, Jug]] | None:
+    queue = [(starting_state, [starting_state])]
     it = 0
     while queue:
-        pprint("---------------------------------------------------------")
-        pprint(f"Iteration: {it}")
         state, path = queue.pop(0)
-        print("State:")
-        pprint(state)
-        if state.is_final:
+        if any(x.content == 4 for x in state):
             return path
-        neighbors = get_neighbors(state)
-        print("Neighbors:")
-        pprint(neighbors)
-        for neighbor in neighbors:
-            queue += [(neighbor, path+[neighbor])]
+        neighbor_states = get_neighbor_states(state)
+        for neighbor in neighbor_states:
+            queue += [(neighbor, path + [neighbor])]
         it += 1
     return None
 
 
-def fill_jug__leave_jug(fill: Jug, leave: Jug) -> State:
-    return State(JugFactory.fill_up(fill), leave)
-
-def order_state(state: State) -> State:
-    jugs = state.jugs
-    return State(jugs[1], jugs[0])
-
-
-def empty_jug__leave_jug(empty: Jug, leave: Jug) -> State:
-    return State(JugFactory.empty(empty), leave)
-
-
-def pour_one_jug_into_another(source: Jug, dest: Jug) -> State:
-    pour_amount = max(min((
-        source.content, dest.max - dest.content
-    )), 0)
-    return State(JugFactory.pour_out(source, pour_amount), JugFactory.fill(dest, pour_amount))
+def get_neighbor_states(state: tuple[Jug, Jug]) -> list[tuple[Jug, Jug]]:
+    return list(set((
+        # FILL JUGS
+        (fill_jug(state[0]), state[1]),
+        (state[0], fill_jug(state[1])),
+        # EMPTY JUGS
+        (empty_jug(state[0]), state[1]),
+        (state[0], empty_jug(state[1])),
+        # POUR JUGS
+        pour_one_jug_into_another(*state),
+        tuple(reversed(pour_one_jug_into_another(state[1], state[0]))),
+    )))
 
 
-def get_neighbors(state: State) -> list[State]:
-    jugs = state.jugs
-    unique_states = set((
-        fill_jug__leave_jug(jugs[0], jugs[1]),
-        empty_jug__leave_jug(jugs[0], jugs[1]),
-        pour_one_jug_into_another(jugs[0], jugs[1]),
-        order_state(fill_jug__leave_jug(jugs[1], jugs[0])),
-        order_state(empty_jug__leave_jug(jugs[1], jugs[0])),
-        order_state(pour_one_jug_into_another(jugs[1], jugs[0])),
-    ))
-    return [s for s in unique_states if s.is_valid and s != state]
+def fill_jug(j: Jug) -> Jug:
+    return Jug(content=j.max, max=j.max)
+
+def empty_jug(j: Jug) -> Jug:
+    return Jug(content=0, max=j.max)
+
+def pour_one_jug_into_another(source: Jug, dest: Jug) -> tuple[Jug, Jug]:
+    pour_amount = max(min((source.content, dest.max - dest.content)), 0)
+    return (
+        Jug(content=source.content - pour_amount, max=source.max),
+        Jug(content=dest.content + pour_amount, max=dest.max),
+    )
 
 
-if __name__ == '__main__':
-    state = State(Jug(max=3), Jug(max=5))
+if __name__ == "__main__":
+    state = (Jug(content=0, max=3), Jug(content=0, max=5))
+    result = jug_pouring(state)
+    assert result and len(result) == 7
+    print("------------------------")
+    print("RESULT:")
     pprint(jug_pouring(state))
