@@ -59,9 +59,8 @@ Jug = namedtuple("Jug", ["content", "max"])
 
 def jug_pouring(
     starting_state: tuple[Jug, Jug]
-) -> list[tuple[Jug, Jug]] | None:
+) -> list[tuple[Jug, Jug]]:
     queue = [(starting_state, [starting_state])]
-    it = 0
     while queue:
         state, path = queue.pop(0)
         if any(x.content == 4 for x in state):
@@ -69,8 +68,7 @@ def jug_pouring(
         neighbor_states = get_neighbor_states(state)
         for neighbor in neighbor_states:
             queue += [(neighbor, path + [neighbor])]
-        it += 1
-    return None
+    return []
 
 
 def get_neighbor_states(state: tuple[Jug, Jug]) -> list[tuple[Jug, Jug]]:
@@ -94,7 +92,7 @@ def empty_jug(j: Jug) -> Jug:
     return Jug(content=0, max=j.max)
 
 def pour_one_jug_into_another(source: Jug, dest: Jug) -> tuple[Jug, Jug]:
-    pour_amount = max(min((source.content, dest.max - dest.content)), 0)
+    pour_amount = min((source.content, dest.max - dest.content))
     return (
         Jug(content=source.content - pour_amount, max=source.max),
         Jug(content=dest.content + pour_amount, max=dest.max),
