@@ -59,13 +59,32 @@ def get_candidate_squares(pos: tuple[int,int]) -> list[tuple[int,int]]:
 """
 from functools import reduce
 from functools import lru_cache
+from typing import Iterator
 import random
 import time
 
 
+def main():
+    dim = (6,6)
+    start = time.perf_counter()
+    starting_point = (0,0) #get_random_starting_point(dim)
+    print(f"Starting Point: {starting_point}")
+    res = solve(starting_point, dim, end_at_start=False, debug=True)
+    end = time.perf_counter()
+    print(f"Elapsed: {end-start:.4f}")
+    assert len(res) == get_total_squares(dim), res
+    print(f"Path: {res}")
+
+    # Test path validity
+    for ix,step in enumerate(res):
+        if ix != 0:
+            assert step in set(get_possible_moves(res[ix-1], dim))
+
 def solve(
     start: tuple[int,int],
-    dim: tuple[int, int]
+    dim: tuple[int, int],
+    end_at_start: bool = False,
+    debug: bool = False
 ) -> list[tuple[int, int]]:
     s = [(start, [start])]
     total_squares = get_total_squares(dim)
@@ -74,18 +93,19 @@ def solve(
         pos, path = s.pop()
         path_seen = set(path)
         path_length = len(path_seen)
-        if path_length == total_squares:
+        if not end_at_start and path_length == total_squares:
             return path
-        for candidate in get_candidate_squares(pos):
-            if not is_valid(candidate, dim):
-                continue
+        for candidate in get_possible_moves(pos, dim):
             if candidate not in path_seen:
                 s.append((candidate, path+[candidate]))
-            #elif path_length == total_squares-1 and candidate == start:
-            #    return path+[candidate]
-        it += 1
-        if (it % 1000 == 0):
-            print(f'{it} Iterations')
+            if path_length == total_squares-1:
+                if candidate == start:
+                    return path+[candidate]
+        if debug:
+            it += 1
+            if (it % 100000 == 0):
+                print(f'{it} Iterations')
+                print('Path Length:', path_length)
     return []
 
 
@@ -98,14 +118,10 @@ def get_total_squares(dimensions: tuple[int, int]) -> int:
     return reduce(lambda x, y: x*y, dimensions)
 
 def get_random_starting_point(dimensions: tuple[int, int]) -> tuple[int,int]:
-    return tuple(
-        random.randint(0, x-1)
-        for x in dimensions
-    )
+    return tuple(random.randint(0, x-1) for x in dimensions)
 
-@lru_cache()
-def get_candidate_squares(pos: tuple[int,int]) -> list[tuple[int,int]]:
-    return [
+def get_possible_moves(pos: tuple[int,int], dim: tuple[int,int]) -> Iterator[tuple[int,int]]:
+    candidates = [
         (pos[0]+2, pos[1]-1),
         (pos[0]+2, pos[1]+1),
         (pos[0]+1, pos[1]-2),
@@ -115,24 +131,10 @@ def get_candidate_squares(pos: tuple[int,int]) -> list[tuple[int,int]]:
         (pos[0]-2, pos[1]-1),
         (pos[0]-2, pos[1]+1)
     ]
-
+    for c in candidates:
+        if is_valid(c, dim):
+            yield c
 
 if __name__ == '__main__':
-    dim = (5,5)
-    start = time.perf_counter()
-    starting_point = get_random_starting_point(dim)
-    res = solve(
-        starting_point, dim
-    )
-    end = time.perf_counter()
-    print(starting_point)
-    print(f"Elapsed: {end-start:.4f}")
-    assert res
+    main()
 
-    for ix,step in enumerate(res):
-        if ix == 0:
-            continue
-        assert step in set(
-            x for x in get_candidate_squares(res[ix-1])
-            if is_valid(x, dim)
-        )
