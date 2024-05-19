@@ -59,7 +59,6 @@ def get_candidate_squares(pos: tuple[int,int]) -> list[tuple[int,int]]:
 """
 from functools import reduce
 from functools import lru_cache
-from typing import Iterator
 import random
 import time
 
@@ -69,7 +68,7 @@ def main():
     start = time.perf_counter()
     starting_point = (0,0) #get_random_starting_point(dim)
     print(f"Starting Point: {starting_point}")
-    res = solve(starting_point, dim, end_at_start=False, debug=True)
+    res = solve(starting_point, dim, end_at_start=True, debug=True)
     end = time.perf_counter()
     print(f"Elapsed: {end-start:.4f}")
     assert len(res) == get_total_squares(dim), res
@@ -78,7 +77,11 @@ def main():
     # Test path validity
     for ix,step in enumerate(res):
         if ix != 0:
-            assert step in set(get_possible_moves(res[ix-1], dim))
+            assert step in set(
+                m for m in
+                get_possible_moves(res[ix-1])
+                if is_valid(m, dim)
+            )
 
 def solve(
     start: tuple[int,int],
@@ -95,7 +98,13 @@ def solve(
         path_length = len(path_seen)
         if not end_at_start and path_length == total_squares:
             return path
-        for candidate in get_possible_moves(pos, dim):
+        possible_moves = get_possible_moves(pos)
+        candidates = sorted(
+            (move for move in possible_moves if is_valid(move, dim)),
+            key=lambda x: len([move for move in get_possible_moves(x) if is_valid(move, dim)]),
+            reverse=True
+        )
+        for candidate in candidates:
             if candidate not in path_seen:
                 s.append((candidate, path+[candidate]))
             if path_length == total_squares-1:
@@ -118,10 +127,10 @@ def get_total_squares(dimensions: tuple[int, int]) -> int:
     return reduce(lambda x, y: x*y, dimensions)
 
 def get_random_starting_point(dimensions: tuple[int, int]) -> tuple[int,int]:
-    return tuple(random.randint(0, x-1) for x in dimensions)
+    return tuple(random.randint(1, x-1) for x in dimensions)
 
-def get_possible_moves(pos: tuple[int,int], dim: tuple[int,int]) -> Iterator[tuple[int,int]]:
-    candidates = [
+def get_possible_moves(pos: tuple[int,int]) -> list[tuple[int,int]]:
+    return [
         (pos[0]+2, pos[1]-1),
         (pos[0]+2, pos[1]+1),
         (pos[0]+1, pos[1]-2),
@@ -131,9 +140,6 @@ def get_possible_moves(pos: tuple[int,int], dim: tuple[int,int]) -> Iterator[tup
         (pos[0]-2, pos[1]-1),
         (pos[0]-2, pos[1]+1)
     ]
-    for c in candidates:
-        if is_valid(c, dim):
-            yield c
 
 if __name__ == '__main__':
     main()

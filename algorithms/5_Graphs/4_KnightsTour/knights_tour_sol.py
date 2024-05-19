@@ -15,6 +15,17 @@
             - Intuition?
                 - You want to prioritize the outside paths to that you leave the flexible inside squares last
 """ 
+BOARD_SIZE = 5
+DELTAS = (
+    (-2, -1),
+    (-2,  1),
+    ( 2, -1),
+    ( 2,  1),
+    (-1, -2),
+    (-1,  2),
+    ( 1, -2),
+    ( 1,  2),
+)
 
 
 def tour(start=(0,0)):
@@ -30,9 +41,37 @@ def tour(start=(0,0)):
     s = [(start, {start: None})]
 
     while s:
-        current_square, path = s.pop()
-        if len(path) == 64:
+        current, path = s.pop()
+        if len(path) == BOARD_SIZE**2:
             return path
-        for c in candidates(current, path):
-            pass
+        candidates = find_next(current, path)
+        candidates.sort(
+            key=lambda c: len(find_next(c,path)), reverse=True
+        )
+        for c in candidates:
+            next_path = path.copy()
+            next_path[c] = None
+            s.append((c, next_path))
+
+
+def find_next(current, path):
+    """
+    Given the current position and path so far, return a list of possible next steps.
+
+    TODO Prioritize edges which have fewest possible options.
+
+    Return those in reverse order, for convenience of pushing to stack
+    """
+    out = []
+    for dx, dy in DELTAS:
+        cx, cy = current[0] + dx, current[1] + dy
+        if 0 <= cx < BOARD_SIZE and 0 <= cy < BOARD_SIZE and (cx,cy) not in path:
+            out.append((cx, cy))
+    return out
+
+
+if __name__ == '__main__':
+    
+
+
 
