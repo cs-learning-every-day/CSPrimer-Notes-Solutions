@@ -47,8 +47,6 @@ from pprint import pprint
 import typing as t
 import sys
 
-FILE = "maze-solver/small.txt"
-
 POSSIBLE_MOVES = [
     (1, -1),
     (1, 0),
@@ -136,16 +134,16 @@ def solve(map: Map) -> Path:
     queue: list[Position] = [
         Position(map.start, 0, Path([(map.start, 0)])),
     ]
-    total_cost = {map.start: 0.}
+    position_cost = {map.start: 0.0}
 
     while queue:
-        queue = sorted(queue, key=lambda position: position.cost, reverse=False)
+        queue = sorted(queue, key=lambda position: position.cost)
         position = queue.pop(0)
         if position.coordinate == map.end:
             return position.path
         for neighbor in get_neighbors(position.coordinate, map):
             cost = compute_cost(neighbor, position.path, map)
-            if neighbor not in total_cost or cost < total_cost[neighbor]:
+            if neighbor not in position_cost or cost < position_cost[position.coordinate]:
                 queue.append(
                     Position(
                         coordinate=neighbor,
@@ -153,8 +151,7 @@ def solve(map: Map) -> Path:
                         path=Path(position.path + [(neighbor, cost)])
                     )
                 )
-                total_cost[neighbor] = cost
-
+                position_cost[neighbor] = cost
 
     return Path([])
 
@@ -174,7 +171,7 @@ def compute_cost(
     coordinate_value = map.get_coordinate_value(coordinate)
     coordinate_cost = _get_square_cost(coordinate_value)
     _, last_cost = path[-1]
-    return coordinate_cost + last_cost + distance(coordinate, map.end) * 0
+    return coordinate_cost + last_cost + distance(coordinate, map.end) * 0.2
 
 def _get_square_cost(value: str) -> int:
     if value == "#":
@@ -188,14 +185,18 @@ def _get_square_cost(value: str) -> int:
     if value == "O":
         return 100
     raise ValueError(
-        f"Provided square value must be in ('#', '.', ' ')\n" f"Provided value: {value}"
+        f"Provided square value must be in ('#', '.', ' ', 'O', 'X')\n" f"Provided value: {value}"
     )
 
 def distance(start: Coordinate, end: Coordinate) -> float:
-    return _manhattan_distance(start, end)
+    return _euclidean_distance(start, end)
 
 def _manhattan_distance(start: Coordinate, end: Coordinate) -> float:
     return abs(start.x - end.x) + abs(start.y - end.y)
+
+def _euclidean_distance(start: Coordinate, end: Coordinate) -> float:
+    return ((start.x - end.x) ** 2 + (start.y - end.y) ** 2) ** 0.5
+
 
 
 if __name__ == '__main__':
