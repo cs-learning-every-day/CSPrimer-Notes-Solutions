@@ -41,6 +41,7 @@ Plan (Text):
         - Cost Function: minimize -> x.cumulative_cost + euclidean_distance(end_coord - x.coord)
 """
 
+import time
 import enum
 from dataclasses import dataclass
 from pprint import pprint
@@ -139,6 +140,8 @@ def solve(map: Map) -> Path:
     while queue:
         queue = sorted(queue, key=lambda position: position.cost)
         position = queue.pop(0)
+        time.sleep(0.1) 
+        map.render_path(position.path)
         if position.coordinate == map.end:
             return position.path
         for neighbor in get_neighbors(position.coordinate, map):
@@ -171,7 +174,7 @@ def compute_cost(
     coordinate_value = map.get_coordinate_value(coordinate)
     coordinate_cost = _get_square_cost(coordinate_value)
     _, last_cost = path[-1]
-    return coordinate_cost + last_cost + distance(coordinate, map.end) * 0.2
+    return coordinate_cost + last_cost + distance(coordinate, map.end)
 
 def _get_square_cost(value: str) -> int:
     if value == "#":

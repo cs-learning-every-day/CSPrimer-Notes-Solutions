@@ -23,7 +23,6 @@
 *   - Real, user & sys time spent per step
 *
 *
-*
 * ASIDE:
 * - Difference between & and &&
 *     - & -> Processes should run at the same time - first program should run in the background, stdin goes to second process
@@ -62,7 +61,9 @@ void profile_start(struct profile_times *t) {
   
 
 // TODO given starting information, compute and log differences to now
-void profile_log(struct profile_times *t) {}
+void profile_log(struct profile_times *t) {
+
+}
 
 int main(int argc, char *argv[]) {
   struct profile_times t;
