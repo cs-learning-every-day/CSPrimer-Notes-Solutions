@@ -1,0 +1,16 @@
+# Learning how to better use man pages
+- You can run `man man` for info on man pages
+- There are sections to the manual
+    - By running `man (section) (command)` you can specify which section you want to look at
+- `apropos` (or `man -k`) can be used to search for a command
+- `less`
+    - The default viewer for man pages
+    - How to look up keybindings (press `h` while in `less`)
+- Gotcha
+    - Things on the command line are not always a program executed on the command line (i.e. in section 1))
+    - Example -> `ls`
+        - A general utility, which is in `/usr/bin/ls`
+    - Example -> `cd`
+        - Not a general utility, its a builtin
+        - By running man page on cd you'll get the page for builtin
+- `man bash` for bash stuff
