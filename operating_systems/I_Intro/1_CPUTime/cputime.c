@@ -65,16 +65,17 @@ void profile_start(struct profile_times *t) {}
 void profile_log(struct profile_times *t) {}
 
 int main(int argc, char *argv[]) {
+  // Setup
   struct profile_times t;
-  struct timeval start_mul, end_mul;
   pid_t pid = getpid();
 
-  // TODO profile doing a bunch of floating point muls
-  float x = 1.0;
+
+  struct timeval start_mul, end_mul;
   profile_start(&t);
   printf("[pid %d] %d fmuls\n", pid, NUM_MULS);
   gettimeofday(&start_mul, NULL);
   struct rusage usage_mul;
+  float x = 1.0;
   for (int i = 0; i < NUM_MULS; i++)
     x *= 1.1;
   gettimeofday(&end_mul, NULL);
@@ -93,22 +94,40 @@ int main(int argc, char *argv[]) {
   // Convert to total elapsed time in seconds
   double elapsed_mul_u = seconds_mul_u + useconds_mul_u/1e6;
   double elapsed_mul_s = seconds_mul_s + useconds_mul_s/1e6;
-  double elapsed_mul_r = elapsed_mul_u + elapsed_mul_s;
+  double elapsed_mul_r = seconds_mul_r + useconds_mul_r/1e6;
   printf("[pid %d] real: %.3fs user: %.3fs system: %.3fs\n", pid, elapsed_mul_r, elapsed_mul_u, elapsed_mul_s);
 
 
   // TODO profile doing a bunch of mallocs
+  struct timeval start_malloc, end_malloc;
   profile_start(&t);
   void *p;
   printf("[pid %d] %d mallocs of size %d\n", pid, NUM_MALLOCS, MALLOC_SIZE);
+  gettimeofday(&start_malloc, NULL);
+  struct rusage usage_malloc;
   for (int i = 0; i < NUM_MALLOCS; i++)
     p = malloc(MALLOC_SIZE);
+  gettimeofday(&end_malloc, NULL);
+  getrusage(RUSAGE_SELF, &usage_malloc);
   profile_log(&t);
+
+  long seconds_malloc_r  = end_malloc.tv_sec  - start_malloc.tv_sec;
+  long useconds_malloc_r = end_malloc.tv_usec - start_malloc.tv_usec;
+
+  long seconds_malloc_u = usage_malloc.ru_utime.tv_sec;
+  long useconds_malloc_u = usage_malloc.ru_utime.tv_usec;
+
+  long seconds_malloc_s = usage_malloc.ru_stime.tv_sec;
+  long useconds_malloc_s = usage_malloc.ru_stime.tv_usec;
+
+  // Convert to total elapsed time in seconds
+  double elapsed_malloc_u = seconds_malloc_u + useconds_malloc_u/1e6;
+  double elapsed_malloc_s = seconds_malloc_s + useconds_malloc_s/1e6;
+  double elapsed_malloc_r = seconds_malloc_r + useconds_malloc_r/1e6;
+  printf("[pid %d] real: %.3fs user: %.3fs system: %.3fs\n", pid, elapsed_malloc_r, elapsed_malloc_u, elapsed_malloc_s);
 
   // TODO profile sleeping
   struct timeval start_sleep, end_sleep;
-
-  // TODO profile doing a bunch of floating point muls
   profile_start(&t);
   printf("[pid %d] sleeping for %d seconds\n", pid, SLEEP_SEC);
   gettimeofday(&start_sleep, NULL);
@@ -130,7 +149,7 @@ int main(int argc, char *argv[]) {
   // Convert to total elapsed time in seconds
   double elapsed_sleep_u = seconds_sleep_u + useconds_sleep_u/1e6;
   double elapsed_sleep_s = seconds_sleep_s + useconds_sleep_s/1e6;
-  double elapsed_sleep_r = elapsed_sleep_u + elapsed_sleep_s;
+  double elapsed_sleep_r = seconds_sleep_r + useconds_sleep_r/1e6;
   printf("[pid %d] real: %.3fs user: %.3fs system: %.3fs\n", pid, elapsed_sleep_r, elapsed_sleep_u, elapsed_sleep_s);
 
   printf("DONE\n");
