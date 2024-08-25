@@ -16,32 +16,35 @@
 #include <stdio.h>
 #include <unistd.h>
 #define SLEEP_SEC 0
-#define FIB_N 2
+#define FIB_N 10 
 
+void f(int depth, long bottom){
+    /*
+     * We get the frame (depth), and the pointer to the bottom of the stack frame
+     * To get the size of the stack, you take the pointer to your copy of depth, which exists in the next frame of the stack, and subtract the pointer to the initial variable from it.
+     *
+     */
+    printf("Frame %d\n", depth);
+    printf("Stack Size: %ld\n", bottom - (long) &depth);
+    printf("Current Depth Pointer: %p\n", &depth);
+    printf("---------\n");
+    f(depth+1, bottom);
 
-void print_stack_size(void *start) {
-    int local_var;
-    void *current_stack_pointer = &local_var;
-    printf("Stack size: %ld bytes\n", (char *)start - (char *)current_stack_pointer);
-    printf("Number of frames: %ld\n", ((char *)start - (char *)current_stack_pointer) / 48);
 }
 
-int fib(int n, void *start) {
-    print_stack_size(start);
-    if (n <= 1) {
-        return n;
-    }
-    int left = fib(n - 1, start);
-    int right = fib(n - 2, start);
-    return left + right;
+
+int first(){
+    /*
+    * We instantiate depth at 0, and pass the pointer to that variable to f
+    */
+    int depth = 0;
+    f(depth, (long) &depth);
+    return depth;
+
 }
 
 int main() {
-    int local_var;
-    sleep(SLEEP_SEC);
-    int n = FIB_N; 
-    int result = fib(n, &local_var);
-    printf("Fibonacci of %d is %d\n", n, result);
+    first();
 }
 
 
